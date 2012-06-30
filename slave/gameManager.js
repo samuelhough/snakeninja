@@ -33,11 +33,18 @@ module.exports = (function(){
 			var getId = function(){
 
 			}
+			var colors = ["red", "green"];
 			var addPlayer = function(){
+				var thisColor = colors.pop()
+				var otherPlayerColor = colors.pop();
 				var playerObj = { 
 					pid: Math.random(),
 					index: _players.length
+					color: thisColor,
+					otherPlayerColor: otherPlayerColor
 				};
+				colors.push(otherPlayerColor);
+				colors.push(thisColor);
 				_players.push(playerObj);
 				players = _players.length;
 				return playerObj;
@@ -164,6 +171,13 @@ module.exports = (function(){
 			thisPlayer.player_name = data;
 			socket.in(roomId).broadcast.emit('otherPlayerNameChange', data);
 		});
+
+
+		socket.emit('playerColors', {
+			thisPlayer: thisPlayer.color,
+			thisPlayer: thisPlayer.otherPlayerColor
+		});
+
 
 		socket.on('disconnect', function () {
 			console.log("DISCONNECT");
