@@ -1,0 +1,15 @@
+{
+  "name": "snake",
+  "subdomain": "snake",
+  "scripts": {
+    "start": "server.js"
+  },
+  "version": "0.0.0-24",
+  "engines": {
+    "node": "0.6.x"
+  },
+  "dependencies": {
+    "express": "2.5.x",
+    "jade": "0.26.3"
+  }
+}
