@@ -14,7 +14,6 @@ socket.on('userConnected', function (data) {
 
 socket.on('setRoomId', function(newId){
 	console.log(newId)
-	roomId.set(newId);
 });
 
 socket.on('chat', function(chat){

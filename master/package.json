@@ -1,0 +1,18 @@
+{
+  "name": "snakemaster",
+  "subdomain": "snake",
+  "scripts": {
+    "start": "master.js"
+  },
+  "version": "0.0.0-48",
+  "engines": {
+    "node": "0.6.x"
+  },
+  "dependencies": {
+    "express": "2.5.x",
+    "jade": "0.26.3",
+    "request": "2.9.203",
+    "socket.io": "0.9.x",
+    "http-proxy": "0.8.1"
+  }
+}

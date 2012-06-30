@@ -174,8 +174,8 @@ module.exports = (function(){
     		socket.in(roomId).broadcast.emit('disconnect')
   		});
 
-  		socket.on('playerMove', function(data){
-  			socket.in(roomId).broadcast.emit('otherPlayerData', data);
+  		socket.on('movePlayer', function(data){
+  			socket.in(roomId).broadcast.emit('receivePlayerPos', data);
   		});
 
   		socket.on('gameOver', function(){
