@@ -26,14 +26,29 @@
 	var PLAYER_TWO_COLOR = "#c73e92";
 	var BACKGROUND_COLOR = "#fff";
 	
+	var helpers = {
+		// very cheap version. Hacky.
+		mod: function(dividend, modulo) {
+			while (dividend < 0) {
+				dividend += modulo;
+			}
+			return dividend % modulo;
+		}
+	}
+	
 	var Snake = function(color, field) {
-		var directionList = ['N', 'S', 'E', 'W'];
 		
+		// direction symbols
+		var north = 0,
+			east = 1,
+			south = 2,
+			west = 3;
+			
 		var self = this;
 		
 		this.needsToBeRendered = true;
 		this.color = color;
-		this.direction = directionList[Math.floor(Math.random() * 4)];
+		this.direction = Math.floor(Math.random() * 4);
 		
 		// an array of x-y coordinates.
 		this.body = [];
@@ -42,8 +57,7 @@
 		this.maxLength = 10;
 		// END OF INITIAL TEST CODE.
 		
-		
-		
+		// Init code
 		do {
 			this.body[0] = {
 				x: Math.floor(Math.random() * field.size),
@@ -57,10 +71,10 @@
 			    newHead;
 				
 			switch(this.direction) {
-				case 'N': dy -= 1; break;
-				case 'S': dy += 1; break;
-				case 'E': dx += 1; break;
-				case 'W': dx -= 1;			
+				case 0: dy -= 1; break; // north
+				case 1: dx += 1; break; // east
+				case 2: dy += 1; break; // south
+				case 3: dx -= 1;			// west
 			}
 			
 			newHead = {
@@ -189,12 +203,30 @@
 	}
 
 	var field = new Field(GRID_SIZE);
-	field.addSnake(new Snake(PLAYER_ONE_COLOR, field));
-	field.addSnake(new Snake(PLAYER_TWO_COLOR, field));
+	var snakeOne = new Snake(PLAYER_ONE_COLOR, field);
+	var snakeTwo = new Snake(PLAYER_TWO_COLOR, field);
+	field.addSnake(snakeOne);
+	field.addSnake(snakeTwo);
 	
 	var canvas = new Canvas('mainCanvas', field, GRID_SIZE);
 	
 	var interval = setInterval (canvas.step, INTERVAL_TIME);
+	
+	// Event handlers:
+	$('body').on('keydown', function(e) {
+		console.log(e.which);
+		if (e.which === 74 || e.which === 106) {
+			console.log('left');
+			snakeOne.direction = helpers.mod(snakeOne.direction + 1, 4);
+		}
+		if (e.which === 106 || e.which === 107) {
+			console.log('right');
+			snakeOne.direction = helpers.mod(snakeOne.direction - 1, 4);
+		}
+	});
+	
+	
+	
 	
 	$('body').on('keypress', function(e) {
 		if (e.which === 27) {
