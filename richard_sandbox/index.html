@@ -16,6 +16,24 @@
 	<canvas id="mainCanvas"></canvas>
 
 <script type="text/javascript">
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.3/underscore-min.js"></script>
+</head>
+<style type="text/css">
+	#mainCanvas {
+		border: solid 3px #888;
+		margin: 35px;
+	}
+</style>
+<body>
+	<canvas id="mainCanvas"></canvas>
+
+<script type="text/javascript">
 
 	var LINE_CAP = 'butt';
 	var LINE_JOIN = 'miter';
@@ -85,10 +103,15 @@
 			
 			if (field.isInBounds(newHead) && field.isEmpty(newHead)) {
 				this.body.unshift(newHead);
-				field.grid[newHead.x][newHead.y] = 'snake';
+				field.grid[newHead.x][newHead.y] = 1;
+
+				
 				this.needToAddHead = true;				
 				if (this.body.length > this.maxLength) {
 					this.body.length -= 1;
+					var tail = this.body[this.body.length - 1];
+					field.grid[tail.x][tail.y] = null;
+				
 					this.needToRemoveTail = true;
 				}
 			} else {
@@ -118,7 +141,9 @@
 		this.isInBounds = function(location) {
 			var x = location.x;
 			var y = location.y;
-			return (x >= 0 && x < size && y >= 0 && y < size);
+			var inbounds = (x >= 0 && x < size && y >= 0 && y < size);
+
+			return inbounds;
 		}
 		
 		this.isEmpty = function(location) {
@@ -144,6 +169,10 @@
 			_.each(this.snakes, function(snake) {
 				snake.move();
 			})
+		}
+		this.setPos = function(m,x,y){
+			this.grid[x][y] = 1;
+
 		}
 	}
 
@@ -219,22 +248,42 @@
 	$('body').on('keydown', function(e) {
 		var direction = snakeOne.direction;
 		console.log(e.which);
-		if (e.which === 74 || e.which === 106) {
-			console.log('left');
-			snakeOne.direction = (direction === 0) ? 3 : (direction - 1) % 4;
+
+		if(e.which === 87){
+			if(snakeOne.direction !== DIRECTIONS["south"])
+				snakeOne.direction =  DIRECTIONS["north"];
 		}
-		if (e.which === 75 || e.which === 107) {
-			console.log('right');
-			snakeOne.direction = (direction + 1) % 4;
+		if(e.which == 68){
+			if(snakeOne.direction !==  DIRECTIONS["west"])
+				snakeOne.direction =  DIRECTIONS["east"];
+
+		}
+
+		if(e.which == 83){
+			if(snakeOne.direction !==  DIRECTIONS["north"])
+				snakeOne.direction =  DIRECTIONS["south"];
+			
+		}
+
+		if(e.which == 65){
+			if(snakeOne.direction !==  DIRECTIONS["east"])
+				snakeOne.direction =  DIRECTIONS["west"];
+			
 		}
 		
-		
+
+		// quit
 		if (e.which === 27) {
 			clearInterval(interval);
 		}
 		
 	});
 	
+
+</script>
+	
+</body>
+</html>
 
 </script>
 	
