@@ -7,10 +7,13 @@
 	<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.3/underscore-min.js"></script>
 </head>
 <style type="text/css">
-	
+	#mainCanvas {
+		border: solid 3px #888;
+		margin: 35px;
+	}
 </style>
 <body>
-<canvas id="mainCanvas"></canvas>
+	<canvas id="mainCanvas"></canvas>
 
 <script type="text/javascript">
 
@@ -134,16 +137,13 @@
 		this.size = size;
 		
 		this.el = document.getElementById(elementId);
-		this.el.width = size * BLOCK_HEIGHT + 2;
-		this.el.height = size * BLOCK_HEIGHT + 2;
+		this.el.width = size * BLOCK_HEIGHT;
+		this.el.height = size * BLOCK_HEIGHT;
 		
 		var c = this.ctx = this.el.getContext("2d");
 		c.lineCap = LINE_CAP;
 		c.lineJoin = LINE_JOIN;
 		c.lineWidth = 1;
-		
-		c.strokeStyle = "#444";
-		c.strokeRect(0, 0, size * BLOCK_HEIGHT, size * BLOCK_HEIGHT);
 		
 		c.strokeStyle = c.fillStyle = BACKGROUND_COLOR;
 
