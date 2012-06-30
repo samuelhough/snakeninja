@@ -10,7 +10,7 @@
 	
 </style>
 <body>
-<canvas id="mainCanvas" width="500" height="500"></canvas>
+<canvas id="mainCanvas"></canvas>
 
 <script type="text/javascript">
 
@@ -18,7 +18,7 @@
 	var LINE_JOIN = 'miter';
 	var SPEED = 10; // pixels per cycle?
 	var BLOCK_HEIGHT = 10;
-	var GRID_SIZE = 4; // just make sure BLOCK_HEIGHT is divisible by GRID_SIZE, for now.
+	var GRID_SIZE = 40; // just make sure BLOCK_HEIGHT is divisible by GRID_SIZE, for now.
 	var PLAYER_ONE_COLOR = "#39c63f";
 	var PLAYER_TWO_COLOR = "#c73e92";
 	var BACKGROUND_COLOR = "#fff";
@@ -30,14 +30,11 @@
 		this.needsToBeRendered = true;
 		this.color = color;
 		
-		// body starts with one new location.
-		this.body = [{}];
+		// an array of x-y coordinates.
+		this.body = [];
 		
 		// JUST FOR INITIAL TEST:
 		this.maxLength = 10;
-		// END OF JUST FOR INITIAL TEST
-
-		// JUST FOR INITIAL TEST:
 		this.direction = 'N';
 		// END OF INITIAL TEST CODE.
 		
@@ -48,7 +45,7 @@
 			}
 		} while (!field.isEmpty(this.body[0]));
 				
-		this.move = function(field) {
+		this.move = function() {
 			var dx = 0, 
 				dy = 0,
 			    newHead;
@@ -66,7 +63,7 @@
 			};
 			
 			if (field.isInBounds(newHead) && field.isEmpty(newHead)) {
-				this.body.shift(newHead);
+				this.body.unshift(newHead);
 				field.grid[newHead.x][newHead.y] = 'snake';
 				this.needToAddHead = true;				
 				if (this.body.length > this.maxLength) {
@@ -124,7 +121,7 @@
 		
 		this.step = function() {
 			_.each(this.snakes, function(snake) {
-				snake.move(self);
+				snake.move();
 			})
 		}
 	}
@@ -137,15 +134,37 @@
 		this.size = size;
 		
 		this.el = document.getElementById(elementId);
+		this.el.width = size * BLOCK_HEIGHT + 2;
+		this.el.height = size * BLOCK_HEIGHT + 2;
+		
 		var c = this.ctx = this.el.getContext("2d");
 		c.lineCap = LINE_CAP;
 		c.lineJoin = LINE_JOIN;
 		c.lineWidth = 1;
-		c.fillStyle = this.ctx.strokeStyle = BACKGROUND_COLOR;
+		
+		c.strokeStyle = "#444";
+		c.strokeRect(0, 0, size * BLOCK_HEIGHT, size * BLOCK_HEIGHT);
+		
+		c.strokeStyle = c.fillStyle = BACKGROUND_COLOR;
 
 		
 		// Clear screen
-		c.fillRect( 0, 0, this.size, this.size);
+		c.fillRect( 0, 0, size * BLOCK_HEIGHT, size * BLOCK_HEIGHT);
+		
+		var drawCell = function(location, color) {
+			c.fillStyle = color;
+			var left = location.x * BLOCK_HEIGHT + 1;
+			var top = location.y * BLOCK_HEIGHT + 1;
+			c.fillRect( left, top, BLOCK_HEIGHT, BLOCK_HEIGHT );
+			c.strokeRect( left, top, BLOCK_HEIGHT, BLOCK_HEIGHT );			
+		}
+		
+		eraseCell = function(location) {
+			c.fillStyle = BACKGROUND_COLOR;
+			var left = location.x * BLOCK_HEIGHT + 1;
+			var top = location.y * BLOCK_HEIGHT + 1;
+			c.fillRect( left, top, BLOCK_HEIGHT, BLOCK_HEIGHT );
+		}
 		
 		var render = function() {
 			_.each(field.snakes, function(snake) {
@@ -159,21 +178,6 @@
 			});
 			
 		}
-		var drawCell = function(location, color) {
-			c.fillStyle = color;
-			var left = location.x * BLOCK_HEIGHT;
-			var top = location.y * BLOCK_HEIGHT;
-			c.fillRect( left, top, BLOCK_HEIGHT, BLOCK_HEIGHT );
-			c.strokeRect( left, top, BLOCK_HEIGHT, BLOCK_HEIGHT );			
-		}
-		
-		eraseCell = function(location) {
-			c.fillStyle = BACKGROUND_COLOR;
-			var left = location.x * BLOCK_HEIGHT;
-			var top = location.y * BLOCK_HEIGHT;
-			c.fillRect( left, top, BLOCK_HEIGHT, BLOCK_HEIGHT );
-		}
-		
 		this.step = function() {
 			// Renders first, so we don't even need to have a startSnake method.
 			render();
@@ -187,7 +191,7 @@
 	
 	var canvas = new Canvas('mainCanvas', field, GRID_SIZE);
 	
-	var interval = setInterval (canvas.step, 200);
+	var interval = setInterval (canvas.step, 20);
 	
 	$('body').on('keypress', function(e) {
 		if (e.which === 27) {
