@@ -19,7 +19,7 @@
 
 	var LINE_CAP = 'butt';
 	var LINE_JOIN = 'miter';
-	var SPEED = 10; // pixels per cycle?
+	var INTERVAL_TIME = 50; // seconds
 	var BLOCK_HEIGHT = 10;
 	var GRID_SIZE = 40; // just make sure BLOCK_HEIGHT is divisible by GRID_SIZE, for now.
 	var PLAYER_ONE_COLOR = "#39c63f";
@@ -27,19 +27,22 @@
 	var BACKGROUND_COLOR = "#fff";
 	
 	var Snake = function(color, field) {
+		var directionList = ['N', 'S', 'E', 'W'];
 		
 		var self = this;
 		
 		this.needsToBeRendered = true;
 		this.color = color;
+		this.direction = directionList[Math.floor(Math.random() * 4)];
 		
 		// an array of x-y coordinates.
 		this.body = [];
 		
 		// JUST FOR INITIAL TEST:
 		this.maxLength = 10;
-		this.direction = 'N';
 		// END OF INITIAL TEST CODE.
+		
+		
 		
 		do {
 			this.body[0] = {
@@ -191,7 +194,7 @@
 	
 	var canvas = new Canvas('mainCanvas', field, GRID_SIZE);
 	
-	var interval = setInterval (canvas.step, 20);
+	var interval = setInterval (canvas.step, INTERVAL_TIME);
 	
 	$('body').on('keypress', function(e) {
 		if (e.which === 27) {
