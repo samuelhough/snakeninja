@@ -19,12 +19,19 @@
 
 	var LINE_CAP = 'butt';
 	var LINE_JOIN = 'miter';
-	var INTERVAL_TIME = 50; // seconds
+	var INTERVAL_TIME = 100; // microseconds
 	var BLOCK_HEIGHT = 10;
 	var GRID_SIZE = 40; // just make sure BLOCK_HEIGHT is divisible by GRID_SIZE, for now.
 	var PLAYER_ONE_COLOR = "#39c63f";
 	var PLAYER_TWO_COLOR = "#c73e92";
 	var BACKGROUND_COLOR = "#fff";
+	
+	var DIRECTIONS = {
+		north: 0,
+		east: 1,
+		south: 2,
+		west: 3
+	};
 	
 	var helpers = {
 		// very cheap version. Hacky.
@@ -38,12 +45,6 @@
 	
 	var Snake = function(color, field) {
 		
-		// direction symbols
-		var north = 0,
-			east = 1,
-			south = 2,
-			west = 3;
-			
 		var self = this;
 		
 		this.needsToBeRendered = true;
@@ -71,10 +72,10 @@
 			    newHead;
 				
 			switch(this.direction) {
-				case 0: dy -= 1; break; // north
-				case 1: dx += 1; break; // east
-				case 2: dy += 1; break; // south
-				case 3: dx -= 1;			// west
+				case DIRECTIONS.north: dy -= 1; break; 
+				case DIRECTIONS.east:  dx += 1; break; 
+				case DIRECTIONS.south: dy += 1; break; 
+				case DIRECTIONS.west:  dx -= 1;			
 			}
 			
 			newHead = {
@@ -213,27 +214,27 @@
 	var interval = setInterval (canvas.step, INTERVAL_TIME);
 	
 	// Event handlers:
+	// (THIS FIRST ONE IS TEST ONLY):
+	
 	$('body').on('keydown', function(e) {
+		var direction = snakeOne.direction;
 		console.log(e.which);
 		if (e.which === 74 || e.which === 106) {
 			console.log('left');
-			snakeOne.direction = helpers.mod(snakeOne.direction + 1, 4);
+			snakeOne.direction = (direction === 0) ? 3 : (direction - 1) % 4;
 		}
-		if (e.which === 106 || e.which === 107) {
+		if (e.which === 75 || e.which === 107) {
 			console.log('right');
-			snakeOne.direction = helpers.mod(snakeOne.direction - 1, 4);
+			snakeOne.direction = (direction + 1) % 4;
 		}
-	});
-	
-	
-	
-	
-	$('body').on('keypress', function(e) {
+		
+		
 		if (e.which === 27) {
 			clearInterval(interval);
-			alert("We're out of here.");
 		}
+		
 	});
+	
 
 </script>
 	
