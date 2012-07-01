@@ -24,3 +24,4 @@ socket.emit('chat','hi');
 socket.on('refreshPage', function(){
 	document.location = document.location;
 });
+

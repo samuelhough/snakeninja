@@ -34,15 +34,19 @@ module.exports = (function(){
 
 			}
 			var colors = ["red", "green"];
+			var pos = [{x: 5,y:5}, {x: 10, y: 10}]
 			var addPlayer = function(){
 				var thisColor = colors.pop()
 				var otherPlayerColor = colors.pop();
+				var position = pos.pop();
 				var playerObj = { 
 					pid: Math.random(),
 					index: _players.length
 					color: thisColor,
 					otherPlayerColor: otherPlayerColor
+					pos: position
 				};
+				pos.push(position);
 				colors.push(otherPlayerColor);
 				colors.push(thisColor);
 				_players.push(playerObj);
@@ -165,7 +169,23 @@ module.exports = (function(){
  		game.players = game.getPlayerNum();
 
 		socket.emit('userConnected','you join '+roomId);
-		socket.in(roomId).broadcast.emit('newUser','user joined');
+
+		
+		socket.in(roomId).broadcast.emit('otherPlayerJoin', {
+			x: thisPlayer.pos.x,
+			y: thisPlayer.pos.y,
+			color: thisPlayer.color
+		});
+		
+		socket.on('sendPlayerData', function(data){
+			socket.in(roomId).broadcast.emit('otherPlayerJoin', data);
+		})
+		
+		socket.emit('thisPlayerData', {
+			x: thisPlayer.pos.x,
+			y: thisPlayer.pos.y,
+			color: thisPlayer.otherPlayerColor
+		});
 
 		socket.on('set_player_name', function(data){
 			thisPlayer.player_name = data;
@@ -173,10 +193,6 @@ module.exports = (function(){
 		});
 
 
-		socket.emit('playerColors', {
-			thisPlayer: thisPlayer.color,
-			thisPlayer: thisPlayer.otherPlayerColor
-		});
 
 
 		socket.on('disconnect', function () {
@@ -200,10 +216,11 @@ module.exports = (function(){
   			socket.in(roomId).broadcast.emit('refreshPage')
   		});
 
+
   		socket.on('chat', function(data){
   			console.log(data)
   			socket.in(roomId).broadcast.emit('chat', data);
-  		})
+  		});
 	});
 
 	return {
