@@ -43,6 +43,7 @@ module.exports = (function(){
 					pid: Math.random(),
 					index: _players.length, 
 					color: thisColor,
+					field: 1,
 					otherPlayerColor: otherPlayerColor, 
 					pos: position
 				};
@@ -152,74 +153,82 @@ module.exports = (function(){
 
 
 
-	on('newConnection', function(socket){
-		socket.emit('userConnected','init');
-		console.log('connected');
+	on('newConnection', function(socket){		
 		var game = games.findGame(),
 			roomId = game.roomId,
-			userId = game.getId();
-		socket.join(roomId);
-		console.log("User game : "+ game);
-		socket.emit('setRoomId', roomId);
-		socket.emit('userConnected','init2');
-
-    	
-  	  	var thisPlayer = game.addPlayer();
+			userId = game.getId(),
+			thisPlayer = game.addPlayer();
+			socket.join(roomId);
+			
  		game.players = game.getPlayerNum();
-
-		socket.emit('userConnected','you join '+roomId);
 
 		
 		socket.in(roomId).broadcast.emit('otherPlayerJoin', {
 			x: thisPlayer.pos.x,
 			y: thisPlayer.pos.y,
+			field: thisPlayer.field,
 			color: thisPlayer.color
 		});
 		
-		socket.on('sendPlayerData', function(data){
-			socket.in(roomId).broadcast.emit('otherPlayerJoin', data);
-		})
-		
 		socket.emit('thisPlayerData', {
-			x: thisPlayer.pos.x,
-			y: thisPlayer.pos.y,
+			location : {
+				x: thisPlayer.pos.x,
+				y: thisPlayer.pos.y
+			},
+			field: thisPlayer.field,
 			color: thisPlayer.otherPlayerColor
 		});
-
-		socket.on('set_player_name', function(data){
-			thisPlayer.player_name = data;
-			socket.in(roomId).broadcast.emit('otherPlayerNameChange', data);
+		
+		
+		socket.on('sendPlayerData', function(data){
+			socket.in(roomId).broadcast.emit('otherPlayerJoin', data);
 		});
+		
+		socket.on('movePlayer', function(data){
+  			socket.in(roomId).broadcast.emit('receivePlayerPos', data);
+  		});	
 
-
-
+		socket.on('gameReady', function(){
+			socket.emit('gameStart');
+			socket.in(roomId).broadcast.emit('gameStart');
+		});
+		
+		socket.on('disconnect', function(){
+	//		game.removePlayer();
+		//	game.players = game.getPlayerNum();
+	//		socket.leave(roomId);
+			
+		});
 
 		socket.on('disconnect', function () {
 			console.log("DISCONNECT");
-			console.log(arguments)
 			game.removePlayer();
 			game.players = game.getPlayerNum();
-
     		socket.in(roomId).broadcast.emit('disconnect')
   		});
 
-  		socket.on('movePlayer', function(data){
-  			socket.in(roomId).broadcast.emit('receivePlayerPos', data);
-  		});
+  		
+		/*
+			socket.on('gameOver', function(){
+				console.log('removing room '+roomId)
+				games.removeGame(roomId);
+				socket.emit('refreshPage');
 
-  		socket.on('gameOver', function(){
-  			console.log('removing room '+roomId)
-  			games.removeGame(roomId);
-  			socket.emit('refreshPage');
+				socket.in(roomId).broadcast.emit('refreshPage')
+			});
 
-  			socket.in(roomId).broadcast.emit('refreshPage')
-  		});
+			socket.on('set_player_name', function(data){
+				thisPlayer.player_name = data;
+				socket.in(roomId).broadcast.emit('otherPlayerNameChange', data);
+			});
 
+			
+			socket.on('chat', function(data){
+				console.log(data)
+				socket.in(roomId).broadcast.emit('chat', data);
+			});
+		*/
 
-  		socket.on('chat', function(data){
-  			console.log(data)
-  			socket.in(roomId).broadcast.emit('chat', data);
-  		});
 	});
 
 	return {

@@ -6,7 +6,9 @@
 	var GRID_SIZE = 40; // just make sure BLOCK_HEIGHT is divisible by GRID_SIZE, for now.
 	var PLAYER_ONE_COLOR = "#39c63f";
 	var PLAYER_TWO_COLOR = "#c73e92";
-	var BACKGROUND_COLOR = "#fff";
+	var BACKGROUND_COLOR = "#fff";	
+	var GAME_ON = false;
+	var FIELD_NUM = 1;
 	
 	var DIRECTIONS = {
 		north: 0,
@@ -25,7 +27,7 @@
 		}
 	}
 	
-	var Snake = function(color, location, field) {
+	var Snake = function(color, location, field, otherPlayer) {
 		
 		var self = this;
 		
@@ -45,18 +47,12 @@
 		// HACK FOR HACK DAY
 		this.body[0] = location;
 		
-		/*
-		do {
-			this.body[0] = {
-				x: Math.floor(Math.random() * field.size),
-				y: Math.floor(Math.random() * field.size)
-			}
-		} while (!field.isEmpty(this.body[0]));
-		
-		*/
-		
-				
+		this.addPoint = function(loc){
+			this.body.unshift(loc);
+		};
+					
 		this.move = function() {
+			if(otherPlayer){ return; }
 			var dx = 0, 
 				dy = 0,
 			    newHead;
@@ -79,9 +75,9 @@
 
 				socket.emit("movePlayer", { 
 					x: newHead.x, 
-					y:newHead.y
+					y: newHead.y
 				})
-
+/*
 				this.needToAddHead = true;				
 				if (this.body.length > this.maxLength) {
 					this.body.length -= 1;
@@ -89,10 +85,12 @@
 					field.grid[tail.x][tail.y] = null;
 				
 					this.needToRemoveTail = true;
-				}
-			} else {
-				this.needToAddHead = false;
-				this.needToRemoveTail = false;
+				}*/
+			} 
+			else {
+			//	this.needToAddHead = false;
+			//	this.needToRemoveTail = false;
+				this.body.pop()
 				if (field.isSurrounded(location)) {
 					// TODO: Have something actually happen when the user can't move any more. 	
 				}
@@ -100,8 +98,7 @@
 		}
 	}
 	
-	var Field = function(size) {
-		
+	var Field = function(size, fieldNum) {		
 		var self = this;
 
 		this.size = size;
@@ -148,13 +145,11 @@
 		}
 		this.setPos = function(m,x,y){
 			this.grid[x][y] = 1;
-
 		}
 	}
 
 
-	var Canvas = function(elementId, field, size) {
-		
+	var Canvas = function(elementId, field, size) {		
 		var self = this;
 		
 		this.size = size;
@@ -164,10 +159,11 @@
 		this.el.height = size * BLOCK_HEIGHT;
 		
 		var c = this.ctx = this.el.getContext("2d");
+		
+		// Styling
 		c.lineCap = LINE_CAP;
 		c.lineJoin = LINE_JOIN;
-		c.lineWidth = 1;
-		
+		c.lineWidth = 1;		
 		c.strokeStyle = c.fillStyle = BACKGROUND_COLOR;
 
 		
@@ -175,6 +171,7 @@
 		c.fillRect( 0, 0, size * BLOCK_HEIGHT, size * BLOCK_HEIGHT);
 		
 		var drawCell = function(location, color) {
+			
 			c.fillStyle = color;
 			var left = location.x * BLOCK_HEIGHT + 1;
 			var top = location.y * BLOCK_HEIGHT + 1;
@@ -191,20 +188,22 @@
 		
 		var render = function() {
 			_.each(field.snakes, function(snake) {
-				var c = self.ctx;
-				if (snake.needToAddHead) {
-					drawCell(snake.body[0], snake.color);
-				}
-				if (snake.needToRemoveTail) {
-					eraseCell(snake.body[snake.body.length - 1]);
-				}
+				var c = self.ctx;				
+				drawCell(snake.body[0], snake.color);	
+				
 			});
-			
-		}
-		this.step = function() {
+		};
+		
+		var step = function() {
 			// Renders first, so we don't even need to have a startSnake method.
 			render();
 			field.step();
+		}
+		
+		this.init = function(){
+			setInterval(function(){
+				step();
+			}, INTERVAL_TIME);
 		}
 	}
 
@@ -213,95 +212,88 @@
 	var field,
 		mySnake,
 		otherSnake,
-		canvas;
+		canvas,
+		allFields = [],
+		location,
+		field = new Field(GRID_SIZE, FIELD_NUM),
+		canvas = new Canvas('mainCanvas', field, GRID_SIZE);
 	
-		field = new Field(GRID_SIZE);
+	allFields.push(field);
+	
 	
 	socket.on('thisPlayerData', function(data){
 		var color = data.color,
-			location = {
-				x: data.x,
-				y: data.y
-			};
-
-		mySnake = new Snake(color, location, field);
-		
-		field.addSnake(mySnake);
-	})
+			location = data.location;	
+			console.log(location);
+		mySnake = new Snake(color, location, field);		
+		field.addSnake(mySnake);		
+	});
 	
-	var init = false;
+	var otherPlayerCalled = false;
 	socket.on('otherPlayerJoin', function(data) {
-		if(init){ return; } else { init = true;}
+		if(otherPlayerCalled){ 
+			socket.emit('gameReady');
+			return; 
+		} else { 
+			otherPlayerCalled = true;			
+		}
+		
 		var color = data.color,
 			location = {
 				x: data.x,
 				y: data.y
 			};
-		otherSnake = new Snake(color, location, field);
-		
+			
+		otherSnake = new Snake(color, location, field, true);		
 		field.addSnake(otherSnake);
 		
 		socket.emit('sendPlayerData', {
 			x: location.x,
 			y: location.y,
+			fieldNum: 1,
 			color: color
 		})
 	});
 	
 	socket.on('gameStart', function(){
-		canvas = new Canvas('mainCanvas', field, GRID_SIZE);
-		var interval = setInterval (canvas.step, INTERVAL_TIME);
-	})
+		console.log('Game start');
+		GAME_ON = true;
+		canvas.init();
+	});
 	
-	socket.on('otherPlayerJoin',function(data){
-		mySnake = new Snake(data.thisPlayer)
-		
-		
-		
-		
-		
-		
-		
-		//data.pos = {x,y}
-		// make snake
-	})
-	socket.on('gameStart', function(data){
-		
-	})
-	// Set the event listeners for the otehr snake.
-	
+	// Set the event listeners for the otehr snake.	
 	socket.on('receivePlayerPos', function(data) {
-		otherSnake.direction = DIRECTIONS[data.dir];
+		console.log(data.x + " " + data.y);
+		otherSnake.addPoint(data);
 	});
 	
 	
 	
 	
-	// Event handlers:
-	// (THIS FIRST ONE IS TEST ONLY):
 	
+	// Event handlers:
+	// (THIS FIRST ONE IS TEST ONLY):	
 	$('body').on('keydown', function(e) {
-		var direction = snakeOne.direction;
 		console.log(e.which);
-
+		if(!GAME_ON){ return; };
 		if(e.which === 87 && mySnake.direction !== DIRECTIONS["south"]){
 			mySnake.direction =  DIRECTIONS["north"];
-			socket.emit('movePlayer', {dir: 'north'});
+	//		socket.emit('movePlayer', {dir: 'north'});
 		}
 		
 		if(e.which == 68 && mySnake.direction !==  DIRECTIONS["west"]){
 			mySnake.direction =  DIRECTIONS["east"];
-			socket.emit('movePlayer', {dir: 'east'});
+	//		socket.emit('movePlayer', {dir: 'east'});
 		}
 
 		if(e.which == 83 && mySnake.direction !==  DIRECTIONS["north"]){
 			mySnake.direction =  DIRECTIONS["south"];
-			socket.emit('movePlayer', {dir: 'south'});			
+	//		socket.emit('movePlayer', {dir: 'south'});			
 		}
 
 		if(e.which == 65 && mySnake.direction !==  DIRECTIONS["east"]){
 			mySnake.direction =  DIRECTIONS["west"];
-			socket.emit('movePlayer', {dir: 'west'});			
+	//		socket.emit('movePlayer', {dir: 'west'});			
 		}
 		
 
