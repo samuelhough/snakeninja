@@ -25,7 +25,7 @@
 		}
 	}
 	
-	var Snake = function(color, field) {
+	var Snake = function(color, location, field) {
 		
 		var self = this;
 		
@@ -41,12 +41,20 @@
 		// END OF INITIAL TEST CODE.
 		
 		// Init code
+		
+		// HACK FOR HACK DAY
+		this.body[0] = location;
+		
+		/*
 		do {
 			this.body[0] = {
 				x: Math.floor(Math.random() * field.size),
 				y: Math.floor(Math.random() * field.size)
 			}
 		} while (!field.isEmpty(this.body[0]));
+		
+		*/
+		
 				
 		this.move = function() {
 			var dx = 0, 
@@ -200,13 +208,71 @@
 		}
 	}
 
-	var field = new Field(GRID_SIZE);
-	var snakeOne = new Snake(PLAYER_ONE_COLOR, field);
-	var snakeTwo = new Snake(PLAYER_TWO_COLOR, field);
-	field.addSnake(snakeOne);
-	field.addSnake(snakeTwo);
+	// Once we receive the player colors, everything else can happen.
 	
-	var canvas = new Canvas('mainCanvas', field, GRID_SIZE);
+	var field,
+		mySnake,
+		otherSnake,
+		canvas;
+	
+		field = new Field(GRID_SIZE);
+	
+	socket.on('thisPlayerData', function(data){
+		var color = data.color,
+			location = {
+				x: data.x,
+				y: data.y
+			};
+
+		mySnake = new Snake(color, location, field);
+		
+		field.addSnake(mySnake);
+	})
+	
+	var init = false;
+	socket.on('otherPlayerJoin', function(data) {
+		if(init){ return; } else { init = true;}
+		var color = data.color,
+			location = {
+				x: data.x,
+				y: data.y
+			};
+		otherSnake = new Snake(color, location, field);
+		
+		field.addSnake(otherSnake);
+		
+		socket.emit('sendPlayerData', {
+			x: location.x,
+			y: location.y,
+			color: color
+		})
+	});
+	
+	socket.on('gameStart', function(){
+		canvas = new Canvas('mainCanvas', field, GRID_SIZE);
+	})
+	
+	socket.on('otherPlayerJoin',function(data){
+		mySnake = new Snake(data.thisPlayer)
+		
+		
+		
+		
+		
+		
+		
+		data.pos = {x,y}
+		// make snake
+	})
+	socket.on('gameStart', function(data){
+		
+	})
+	// Set the event listeners for the otehr snake.
+	
+	socket.on('receivePlayerPos', function(data) {
+		otherSnake.direction = DIRECTIONS[data.dir];
+	});
+	
 	
 	var interval = setInterval (canvas.step, INTERVAL_TIME);
 	
@@ -217,26 +283,24 @@
 		var direction = snakeOne.direction;
 		console.log(e.which);
 
-		if(e.which === 87){
-			if(snakeOne.direction !== DIRECTIONS["south"])
-				snakeOne.direction =  DIRECTIONS["north"];
+		if(e.which === 87 && mySnake.direction !== DIRECTIONS["south"])
+			mySnake.direction =  DIRECTIONS["north"];
+			socket.emit('movePlayer', {dir: 'north'});
 		}
-		if(e.which == 68){
-			if(snakeOne.direction !==  DIRECTIONS["west"])
-				snakeOne.direction =  DIRECTIONS["east"];
-
-		}
-
-		if(e.which == 83){
-			if(snakeOne.direction !==  DIRECTIONS["north"])
-				snakeOne.direction =  DIRECTIONS["south"];
-			
+		
+		if(e.which == 68 && mySnake.direction !==  DIRECTIONS["west"])
+			mySnake.direction =  DIRECTIONS["east"];
+			socket.emit('movePlayer', {dir: 'east'});
 		}
 
-		if(e.which == 65){
-			if(snakeOne.direction !==  DIRECTIONS["east"])
-				snakeOne.direction =  DIRECTIONS["west"];
-			
+		if(e.which == 83 && mySnake.direction !==  DIRECTIONS["north"])
+			mySnake.direction =  DIRECTIONS["south"];
+			socket.emit('movePlayer', {dir: 'south'});			
+		}
+
+		if(e.which == 65 && mySnake.direction !==  DIRECTIONS["east"])
+			mySnake.direction =  DIRECTIONS["west"];
+			socket.emit('movePlayer', {dir: 'west'});			
 		}
 		
 
