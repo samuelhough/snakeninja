@@ -185,6 +185,7 @@ module.exports = (function(){
 		});
 		
 		socket.on('movePlayer', function(data){
+			console.log(data);
   			socket.in(roomId).broadcast.emit('receivePlayerPos', data);
   		});	
 

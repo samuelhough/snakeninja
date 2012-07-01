@@ -46,11 +46,22 @@
 		
 		// HACK FOR HACK DAY
 		this.body[0] = location;
+		console.log(this.body);
 		
 		this.addPoint = function(loc){
 			this.body.unshift(loc);
+			field.grid[loc.x][loc.y] = 1;
 		};
-					
+		
+		this.sendData = function(){
+			if(otherPlayer){ return;}
+			socket.emit("movePlayer", { 
+				x: self.body[0].x, 
+				y: self.body[0].y
+			})
+		}
+		var intervalMe = setInterval(this.sendData,10);
+		
 		this.move = function() {
 			if(otherPlayer){ return; }
 			var dx = 0, 
@@ -69,14 +80,13 @@
 				y: this.body[0].y + dy
 			};
 			
+			
+			
 			if (field.isInBounds(newHead) && field.isEmpty(newHead)) {
 				this.body.unshift(newHead);
 				field.grid[newHead.x][newHead.y] = 1;
 
-				socket.emit("movePlayer", { 
-					x: newHead.x, 
-					y: newHead.y
-				})
+				
 /*
 				this.needToAddHead = true;				
 				if (this.body.length > this.maxLength) {
@@ -90,6 +100,7 @@
 			else {
 			//	this.needToAddHead = false;
 			//	this.needToRemoveTail = false;
+				
 				this.body.pop()
 				if (field.isSurrounded(location)) {
 					// TODO: Have something actually happen when the user can't move any more. 	
@@ -178,6 +189,7 @@
 			c.fillRect( left, top, BLOCK_HEIGHT, BLOCK_HEIGHT );
 			c.strokeRect( left, top, BLOCK_HEIGHT, BLOCK_HEIGHT );			
 		}
+		this.drawCell = drawCell;
 		
 		eraseCell = function(location) {
 			c.fillStyle = BACKGROUND_COLOR;
@@ -188,7 +200,8 @@
 		
 		var render = function() {
 			_.each(field.snakes, function(snake) {
-				var c = self.ctx;				
+				var c = self.ctx;	
+
 				drawCell(snake.body[0], snake.color);	
 				
 			});
@@ -265,6 +278,7 @@
 	socket.on('receivePlayerPos', function(data) {
 		console.log(data.x + " " + data.y);
 		otherSnake.addPoint(data);
+		canvas.drawCell(data, otherSnake.color);
 	});
 	
 	
