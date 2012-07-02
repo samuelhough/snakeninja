@@ -2,9 +2,9 @@
   "name": "snakemaster",
   "subdomain": "snake",
   "scripts": {
-    "start": "master.js"
+    "start": "balancer.js"
   },
-  "version": "0.0.0-48",
+  "version": "0.0.0-50",
   "engines": {
     "node": "0.6.x"
   },

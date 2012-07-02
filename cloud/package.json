@@ -1,10 +1,10 @@
 {
-  "name": "snakeslave1",
-  "subdomain": "snakeslave1",
+  "name": "snakebal1",
+  "subdomain": "snakebal1",
   "scripts": {
     "start": "server.js"
   },
-  "version": "0.0.0-33",
+  "version": "0.0.0-35",
   "engines": {
     "node": "0.6.x"
   },

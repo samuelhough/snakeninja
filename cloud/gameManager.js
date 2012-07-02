@@ -48,6 +48,7 @@ module.exports = (function(){
 					pos: position
 				};
 				pos.push(position);
+				
 				colors.push(otherPlayerColor);
 				colors.push(thisColor);
 				_players.push(playerObj);
@@ -71,9 +72,8 @@ module.exports = (function(){
 				_players.pop();
 				updateIndexes();
 				players = _players.length;
-				if(players === 0){
-					removeGame(roomId);
-				}
+				removeGame(roomId);
+				
 			}
 			function addSocket(){}
 			
@@ -185,7 +185,7 @@ module.exports = (function(){
 		});
 		
 		socket.on('movePlayer', function(data){
-			console.log(data);
+			
   			socket.in(roomId).broadcast.emit('receivePlayerPos', data);
   		});	
 
@@ -194,18 +194,16 @@ module.exports = (function(){
 			socket.in(roomId).broadcast.emit('gameStart');
 		});
 		
-		socket.on('disconnect', function(){
-	//		game.removePlayer();
-		//	game.players = game.getPlayerNum();
-	//		socket.leave(roomId);
-			
-		});
-
+		
 		socket.on('disconnect', function () {
+			console.log(arguments);
 			console.log("DISCONNECT");
 			game.removePlayer();
-			game.players = game.getPlayerNum();
-    		socket.in(roomId).broadcast.emit('disconnect')
+			game.players = game.getPlayerNum();   	
+			socket.in(roomId).broadcast.emit('refreshPage');		
+			socket.in(roomId).emit('refreshPage');	
+			socket.emit('refreshPage');
+			socket.leave(roomId);
   		});
 
   		

@@ -13,9 +13,7 @@ var routes = require('./routes.js').init(app, _public, gameManager);
 app.set('views', __dirname + '/views');
 app.use(express.static(__dirname + _public));
 
-fs.readFile(__dirname+_public+'/js/app.js', function(e, file){
-	fs.writeFile(__dirname+_public+'/js/app.js', file.toString().split("##LOCALHOST").join('##LOCALHOST\nurl = "localhost:'+port+'"'));
-});
+
 
 var io = require('socket.io').listen(app, { log: false });
 io.sockets.on('connection', function (socket) {
