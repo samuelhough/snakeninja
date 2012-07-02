@@ -308,6 +308,7 @@
 	// Event handlers:
 	// (THIS FIRST ONE IS TEST ONLY):	
 	$('body').on('keydown', function(e) {
+		cookie.reset();
 		console.log(e.which);
 		if(!GAME_ON){ return; };
 		if(e.which === 87 && mySnake.direction !== DIRECTIONS["south"]){

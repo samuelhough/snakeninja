@@ -139,11 +139,12 @@ cloudManager.on('newcloud', function(data){
 					cloudManager.trigger('validated_server', data);
 				}
 			} catch(e){
-				console.log(e);
+				cloudManager.removecloud(data.uid) 
 			}
 			
 		});
 	} catch(e){
+		cloudManager.removecloud(data.uid) 
 		console.log(e);
 	} 
 });
@@ -169,7 +170,10 @@ app.get('/js/libs/:js', function(req, res){
 	res.sendfile(_public + "/js/libs/"+fileName)
 })
 
+app.get('/remove/:cloudurl/:key/:confirmkey', function(req, res){
 
+	res.send('not implimented');
+});
 
 app.get('/', function(req, res){
 	var cloud = cloudManager.pickcloud();
