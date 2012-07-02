@@ -31,6 +31,22 @@ socket.on('playerQuit', function(){
 	document.location = document.referrer;
 	
 });
+
+socket.on('gameOver', function(win){
+	GAME_ON = false;
+	if(win){
+		alert("You have won!");
+	
+	} else {
+		alert("You have lost :(");
+		
+	}
+	
+	alert("Refreshing the page to join you into a new game");
+	document.location = document.referrer;
+	
+});
+
 socket.on('clientMsg', function(data){
 	console.log(data);
 	addMsg(data);

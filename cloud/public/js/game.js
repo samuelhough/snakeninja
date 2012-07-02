@@ -103,7 +103,8 @@
 				
 				this.body.pop()
 				if (field.isSurrounded(location)) {
-					// TODO: Have something actually happen when the user can't move any more. 	
+					GAME_ON = false;
+					socket.emit("PlayerDeath");
 				}
 			}
 		}
@@ -239,7 +240,13 @@
 			location = data.location;	
 			console.log(location);
 		mySnake = new Snake(color, location, field);		
-		field.addSnake(mySnake);		
+		field.addSnake(mySnake);	
+		if(location.y < 20){
+			mySnake.direction = DIRECTIONS["south"];
+		}
+		if(location.y > 20){
+			mySnake.direction = DIRECTIONS["north"];
+		}
 	});
 	
 	var otherPlayerCalled = false;

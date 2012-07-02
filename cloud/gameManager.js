@@ -171,14 +171,16 @@ module.exports = (function(){
 			color: thisPlayer.color
 		});
 		
-		socket.emit('thisPlayerData', {
+		var sendThisPlayer =  {
 			location : {
 				x: thisPlayer.pos.x,
 				y: thisPlayer.pos.y
 			},
 			field: thisPlayer.field,
 			color: thisPlayer.otherPlayerColor
-		});
+		};	
+		
+		socket.emit('thisPlayerData',sendThisPlayer);
 		
 		
 		socket.on('sendPlayerData', function(data){
@@ -195,6 +197,10 @@ module.exports = (function(){
 			socket.in(roomId).broadcast.emit('gameStart');
 		});
 		
+		socket.on("PlayerDeath", function(){
+			socket.in(roomId).broadcast.emit('gameOver', true);
+			socket.emit('gameOver', false);
+		});
 		
 		socket.on('disconnect', function () {
 			console.log(arguments);

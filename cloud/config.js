@@ -7,8 +7,8 @@ var port = Math.round(Math.random() * 1000) + 8000,
 	reping_server_time = 30000;
 
 // Dev variables	
-//this_server_web_address = "localhost:"+port,
-//load_balancer_ip = "localhost:3000";
+this_server_web_address = "localhost:"+port,
+load_balancer_ip = "localhost:3000";
 	
 module.exports = (function(){
 	var props = {
