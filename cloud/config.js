@@ -1,5 +1,5 @@
 var port = Math.round(Math.random() * 1000) + 8000,
-	this_server_web_address = "snakebal1.jit.su",
+	this_server_web_address = "snakebal2.jit.su",
 	exchange_key = "8982bf5e-2c54-45c7-9bc1-e0672f119c2a",
 	register_cloud_with_balancer = true,
 	confirmation_guid = "defd467a-a2b4-4895-9078-37caf2072c94",
@@ -7,8 +7,8 @@ var port = Math.round(Math.random() * 1000) + 8000,
 	reping_server_time = 30000;
 
 // Dev variables	
-this_server_web_address = "localhost:"+port,
-load_balancer_ip = "localhost:3000";
+//this_server_web_address = "localhost:"+port,
+//load_balancer_ip = "localhost:3000";
 	
 module.exports = (function(){
 	var props = {

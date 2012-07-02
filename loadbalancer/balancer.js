@@ -83,7 +83,7 @@ var cloudManager = (function(){
 				});
 			}(key, workingclouds[key]));
 		}
-	}, 10000);
+	}, 30000);
 
 	var pickcloud = function(){
 		var leastConnect = { playerCount: 1 };
