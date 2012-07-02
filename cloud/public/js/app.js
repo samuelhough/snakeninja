@@ -2,9 +2,12 @@
 var url = document.location.host;
 
 var socket = io.connect('http://'+url);
+function addMsg(msg){
+	$('#chat').html(msg + "<br>"+ $('#chat').html() );
+}
 
 socket.on('userConnected', function (data) {
-  $('#msg').html($('#msg').html() + data);  	
+    	addMsg("You connected to the game");
 });
 
 socket.on('setRoomId', function(newId){
@@ -21,6 +24,13 @@ socket.on('refreshPage', function(){
 	document.location = document.location;
 });
 socket.on('playerQuit', function(){
-	alert('The other player has left the game.  Bringing you to a new game');
-	document.location = document.location;
+	addMsg("The other user has left the game");
+	addMsg("Refreshing the page to join you into a new game");
+	setTimeout(function(){
+		document.location = document.location;
+	}, 3000);
+});
+socket.on('clientMsg', function(data){
+	console.log(data);
+	addMsg(data);
 });

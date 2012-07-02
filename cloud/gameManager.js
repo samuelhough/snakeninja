@@ -161,7 +161,8 @@ module.exports = (function(){
 			socket.join(roomId);
 			
  		game.players = game.getPlayerNum();
-
+	
+		socket.emit("clientMsg", "You have joined room: " +roomId);
 		
 		socket.in(roomId).broadcast.emit('otherPlayerJoin', {
 			x: thisPlayer.pos.x,
@@ -200,9 +201,9 @@ module.exports = (function(){
 			console.log("DISCONNECT");
 			game.removePlayer();
 			game.players = game.getPlayerNum();   	
-			socket.in(roomId).broadcast.emit('refreshPage');		
-			socket.in(roomId).emit('refreshPage');	
-			socket.emit('refreshPage');
+			socket.in(roomId).broadcast.emit('playerQuit');		
+			socket.in(roomId).emit('playerQuit');	
+			socket.emit('playerQuit');
 			socket.leave(roomId);
   		});
 

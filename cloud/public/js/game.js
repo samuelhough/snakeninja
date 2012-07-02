@@ -250,6 +250,7 @@
 		} else { 
 			otherPlayerCalled = true;			
 		}
+		addMsg("Another player has joined the game");
 		
 		var color = data.color,
 			location = {
@@ -269,9 +270,20 @@
 	});
 	
 	socket.on('gameStart', function(){
-		console.log('Game start');
-		GAME_ON = true;
-		canvas.init();
+		addMsg("The game is ready to start.  Starting in 5 seconds....");
+		var timeTillStart = 5;
+		
+		var startMsg = setInterval(function(){
+			if(timeTillStart === 0){  
+				addMsg('Start!');
+				GAME_ON = true;
+				canvas.init();
+				clearInterval(startMsg);
+			}
+			addMsg(timeTillStart+"...");
+			timeTillStart -= 1;
+			
+		}, 1000);
 	});
 	
 	// Set the event listeners for the otehr snake.	
