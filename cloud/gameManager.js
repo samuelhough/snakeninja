@@ -34,7 +34,7 @@ module.exports = (function(){
 
 			}
 			var colors = ["red", "green"];
-			var pos = [{x: 5,y:5}, {x: 10, y: 10}]
+			var pos = [{x: 5,y:5}, {x: 35, y: 35}]
 			var addPlayer = function(){
 				var thisColor = colors.pop()
 				var otherPlayerColor = colors.pop();
@@ -47,8 +47,6 @@ module.exports = (function(){
 					otherPlayerColor: otherPlayerColor, 
 					pos: position
 				};
-				pos.push(position);
-				
 				colors.push(otherPlayerColor);
 				colors.push(thisColor);
 				_players.push(playerObj);
@@ -163,7 +161,9 @@ module.exports = (function(){
  		game.players = game.getPlayerNum();
 	
 		socket.emit("clientMsg", "You have joined room: " +roomId);
-		
+		if(game.players < 2){
+			socket.emit("clientMsg", "Waiting for another player to join....")
+		}
 		socket.in(roomId).broadcast.emit('otherPlayerJoin', {
 			x: thisPlayer.pos.x,
 			y: thisPlayer.pos.y,

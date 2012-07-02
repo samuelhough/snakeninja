@@ -90,7 +90,9 @@ var cloudManager = (function(){
 		for(var key in workingclouds){
 			if(workingclouds.hasOwnProperty(key)){
 				if(typeof workingclouds[key].playerCount !== 'undefined' && workingclouds[key].playerCount <= leastConnect.playerCount){
-					leastConnect = workingclouds[key];
+					if(workingclouds[key].playerCount % 2 !== 0 || workingclouds[key].playerCount == 0){
+						leastConnect = workingclouds[key];
+					}
 				}
 			}
 		}

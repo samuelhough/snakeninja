@@ -24,11 +24,12 @@ socket.on('refreshPage', function(){
 	document.location = document.location;
 });
 socket.on('playerQuit', function(){
-	addMsg("The other user has left the game");
-	addMsg("Refreshing the page to join you into a new game");
-	setTimeout(function(){
-		document.location = document.location;
-	}, 3000);
+	GAME_ON = false;
+	alert("The other user has left the game!");
+	
+	alert("Refreshing the page to join you into a new game");
+	document.location = document.referrer;
+	
 });
 socket.on('clientMsg', function(data){
 	console.log(data);

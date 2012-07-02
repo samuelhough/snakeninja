@@ -260,6 +260,7 @@
 			
 		otherSnake = new Snake(color, location, field, true);		
 		field.addSnake(otherSnake);
+		canvas.drawCell(location, otherSnake.color);
 		
 		socket.emit('sendPlayerData', {
 			x: location.x,
