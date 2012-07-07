@@ -34,7 +34,11 @@ module.exports = (function(){
 
 			}
 			var colors = ["red", "green"];
-			var pos = [{x: 5,y:5}, {x: 35, y: 35}]
+			var pos = [
+				{face: 0, x: 5, y:5}, 
+				{face: 0, x: 35, y: 35}
+			];
+			
 			var addPlayer = function(){
 				var thisColor = colors.pop()
 				var otherPlayerColor = colors.pop();
@@ -43,7 +47,7 @@ module.exports = (function(){
 					pid: Math.random(),
 					index: _players.length, 
 					color: thisColor,
-					field: 1,
+					face: 0,
 					otherPlayerColor: otherPlayerColor, 
 					pos: position
 				};
@@ -132,11 +136,11 @@ module.exports = (function(){
 			console.log('Open games are '+openGames.length);
 			
 			for(var cur = 0; cur < openGames.length; cur++){
-				console.log('getting palyers')
+				console.log('getting players')
 				console.log(openGames[cur]);
 				pCount += openGames[cur].getPlayerNum();
 			}
-			console.log('Player count is'+pCount)
+			console.log('Player count is '+pCount)
 			return pCount;
 
 		}
@@ -165,32 +169,22 @@ module.exports = (function(){
 			socket.emit("clientMsg", "Waiting for another player to join....")
 		}
 		socket.in(roomId).broadcast.emit('otherPlayerJoin', {
-			x: thisPlayer.pos.x,
-			y: thisPlayer.pos.y,
-			field: thisPlayer.field,
+			location: thisPlayer.pos,
 			color: thisPlayer.color
 		});
 		
-		var sendThisPlayer =  {
-			location : {
-				x: thisPlayer.pos.x,
-				y: thisPlayer.pos.y
-			},
-			field: thisPlayer.field,
+		socket.emit('thisPlayerData', {
+			location : thisPlayer.pos,
 			color: thisPlayer.otherPlayerColor
-		};	
-		
-		socket.emit('thisPlayerData',sendThisPlayer);
-		
-		
+		});
+				
 		socket.on('sendPlayerData', function(data){
 			socket.in(roomId).broadcast.emit('otherPlayerJoin', data);
 		});
 		
 		socket.on('movePlayer', function(data){
-			
-  			socket.in(roomId).broadcast.emit('receivePlayerPos', data);
-  		});	
+			socket.in(roomId).broadcast.emit('receivePlayerPos', data);
+		});	
 
 		socket.on('gameReady', function(){
 			socket.emit('gameStart');
@@ -234,6 +228,9 @@ module.exports = (function(){
 				socket.in(roomId).broadcast.emit('chat', data);
 			});
 		*/
+
+	});
+
 
 	});
 
