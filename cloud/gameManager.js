@@ -35,8 +35,8 @@ module.exports = (function(){
 			}
 			var colors = ["red", "green"];
 			var pos = [
-				{face: 0, x: 5, y:5}, 
-				{face: 0, x: 35, y: 35}
+				{faceIdx: 0, x: 5, y:5}, 
+				{faceIdx: 0, x: 35, y: 35}
 			];
 			
 			var addPlayer = function(){
@@ -47,7 +47,7 @@ module.exports = (function(){
 					pid: Math.random(),
 					index: _players.length, 
 					color: thisColor,
-					face: 0,
+					faceIdx: 0,
 					otherPlayerColor: otherPlayerColor, 
 					pos: position
 				};
