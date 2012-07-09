@@ -7,21 +7,51 @@ var PLAYER_ONE_COLOR = "#39c63f";
 var PLAYER_TWO_COLOR = "#c73e92";
 var BACKGROUND_COLOR = "#fff";	
 var GAME_ON = false;
-var FIELD_NUM = 1;
 
-var DIRECTIONS = {
-		"east": 0,
-		"north": 1,
-		"west": 2,
-		"south": 3
+// This is the map of which edges are next to which other edges, when you
+// glue them all together. This is used by the cube.adjacentCell method.
+// It is an arbitrary map and the CSS for the actual rendering will have to correspond to it.
+// (The top-level indices are face numbers.)
+
+var DIRECTION_TRANSFORM_MAP = {
+	"0": { 
+		east:  {face: 1, direction: "west"}, 
+		north: {face: 2, direction: "south"}, 
+		west:  {face: 3, direction: "east"}, 
+		south: {face: 4, direction: "north"} 
 	},
-	ROTATIONS: = {
-		"0": 0,
-		"90": 1,
-		"180": 2,
-		"270": 3
-	};
-	
+	"1": { 
+		east:  {face: 5, direction: "east"}, 
+		north: {face: 2, direction: "east"}, 
+		west:  {face: 0, direction: "east"}, 
+		south: {face: 4, direction: "east"} 
+	},
+	"2": { 
+		east:  {face: 1, direction: "north"}, 
+		north: {face: 5, direction: "south"}, 
+		west:  {face: 3, direction: "north"}, 
+		south: {face: 0, direction: "north"} 
+	},
+	"3": { 
+		east:  {face: 0, direction: "west"}, 
+		north: {face: 2, direction: "west"}, 
+		west:  {face: 5, direction: "west"}, 
+		south: {face: 4, direction: "west"} 
+	},
+	"4": { 
+		east:  {face: 1, direction: "south"}, 
+		north: {face: 0, direction: "south"}, 
+		west:  {face: 3, direction: "south"}, 
+		south: {face: 5, direction: "north"} 
+	},
+	"5": { 
+		east:  {face: 1, direction: "east"}, 
+		north: {face: 4, direction: "south"}, 
+		west:  {face: 3, direction: "west"}, 
+		south: {face: 2, direction: "north"} 
+	}
+};
+
 
 var CellModel = function(faceIdx, x, y) { 
 	
@@ -109,7 +139,7 @@ SnakeModel.prototype = {
 		// food generation from the server.) Right now, just make sure 
 		// the snake doesn't get too long.
 		
-		return this.body.length > 100;
+		return this.body.length < 100;
 	}
 
 }
@@ -134,23 +164,6 @@ FaceModel.prototype = {
 
 asEvented.call(FaceModel.prototype);
 
-
-/*	this.isSurrounded = function(location) {
-		var isEmpty = this.isEmpty;
-		
-		var dx_range = [-1,0,1];
-		var dy_range = [-1,0,1];
-		_.each(dx_range, function (column) {
-			_.each(dy_range, function (row) {
-				if (self.isInBounds(location) && self.isEmpty(location)) {
-					return false;
-				}
-			});
-		});
-		return true;
-	}
-
-*/
 	
 var CubeModel = function(size){
 	
@@ -164,6 +177,7 @@ var CubeModel = function(size){
 };
 
 CubeModel.prototype = {
+	
 	addSnake: function(snake) {
 		this.snakes.push(snake)
 	},
@@ -184,7 +198,8 @@ CubeModel.prototype = {
 		
 		var size = this.size,
 			location = cell.getLocation(),
-			face = this.faces[location.faceIdx],
+			faceIdx = location.faceIdx,
+			face = this.faces[faceIdx],
 			x = location.x,
 			y = location.y,
 			
@@ -192,13 +207,13 @@ CubeModel.prototype = {
 			new_x = x,
 			new_y = y;
 			
-		if (direction === DIRECTIONS.east) {
+		if (direction === "east") {
 			new_x += 1;
-		} else if (direction === DIRECTIONS.north) {
+		} else if (direction === "north") {
 			new_y += 1;
-		} else if (direction === DIRECTIONS.west) {
+		} else if (direction === "west") {
 			new_x -= 1;
-		} else if (direction === DIRECTIONS.south) {
+		} else if (direction === "south") {
 			new_y -= 1;
 		}
 		
@@ -206,53 +221,86 @@ CubeModel.prototype = {
 		
 		if (new_x < 0 || new_x >= size || new_y < 0 || new_y >= size) {
 			
-			var rotationDifferential = 
+			var edge, newEdge, transform;
+			
+			if (new_x < 0) {
+				edge = "west";
+			} else if (new_x >= size) {
+				edge = "east";
+			} else if (new_y < 0) {
+				edge = "south";
+			} else if (new_y >= size) {
+				edge = "north";
+			}
+			
+			transform = DIRECTIONS_TRANSFORM_MAP[faceIdx][edge];
+			newFace = transform.face;
+			newEdge = transform.direction;
+			
+			// First, set the new coordinate that is at the edge of the new face.
+			
+			if (newEdge === "east") {
+				new_x = size - 1;
+			} else if (newEdge === "north") {
+				new_y = 0;
+			} else if (newEdge === "west") {
+				new_x = 0;
+			} else if (newEdge === "south") {
+				new_y = size - 1;
+			}
+			
+			// Now set the other coordinate.
+			
+			// The case of not tilted at all (east goes to west and vice versa, 
+			// north goes to south and vice versa) 
+			// was already automatically dealt with
+			// when new_x was set to x and new_y was set to y.
+			
+			// Next, the case of tilted 180 degrees:
+			
+			if (edge === newEdge) {
+				if (edge === "east" || edge === "west") {
+					new_y = size - y - 1;
+				} else {
+					new_x = size - x - 1;
+				}
+			}
 			
 			
+			// TODO: the eight special cases of when it's tilted 90 degrees in either direction.
 			
-			
-			
-			
+			if (edge === "east" && newEdge === "north") {
+				new_x = size - y - 1;
+			} else if (edge === "east" && newEdge === "south") {
+				new_x = y;
+			} else if (edge === "north" && newEdge === "east") {
+				new_y = size - x - 1;
+			} else if (edge === "north" && newEdge === "west") {
+				new_y = x;
+			} else if (edge === "west" && newEdge === "north") {
+				new_x = y;
+			} else if (edge === "west" && newEdge === "south") {
+				new_x = size - y - 1;
+			} else if (edge === "south" && newEdge === "east") {
+				new_y = x;
+			} else if (edge === "south" && newEdge === "west") {
+				new_y = size - x - 1;
+			}
 			
 		}
 		
 		return newFace.grid[new_x][new_y];
-			
-	}
-}
-
-
-
-
-
-	this.step = function() {
+	},
+	
+	step: function() {
+		_.each(this.snakes, function(snake) {
+			snake.evaluateMove();
+		});
 		_.each(this.snakes, function(snake) {
 			snake.move();
-		})
-	}
-	this.setPos = function(m,x,y){
-		this.grid[x][y] = 1;
+		});
 	}
 }
-
-
-
-
-
-
-CubeModel.prototype.adjacentCell = function(cell, direction) {
-	var FACE_ROTATION_MAP = [
-		[]
-	];
-	
-	var adjacentCell = cell;
-	if (direction === DIRECTIONS["east"]) {
-		adjacentCell.
-	}
-}
-
-
-
 
 
 var Canvas = function(elementId, field, size) {		
@@ -330,10 +378,10 @@ var mySnake,
 		mySnake = new Snake(color, location, cube);		
 		cube.addSnake(mySnake);	
 		if(location.y < 20){
-			mySnake.direction = DIRECTIONS["south"];
+			mySnake.direction = "south";
 		}
 		if(location.y > 20){
-			mySnake.direction = DIRECTIONS["north"];
+			mySnake.direction = "north";
 		}
 	});
 
@@ -393,23 +441,23 @@ var mySnake,
 $('body').on('keydown', function(e) {
 	console.log(e.which);
 	if(!GAME_ON){ return; };
-	if(e.which === 87 && mySnake.direction !== DIRECTIONS["south"]){
-		mySnake.direction =	 DIRECTIONS["north"];
+	if(e.which === 87 && mySnake.direction !== "south"){
+		mySnake.direction =	 "north";
 //		socket.emit('movePlayer', {dir: 'north'});
 	}
 	
-	if(e.which == 68 && mySnake.direction !==  DIRECTIONS["west"]){
-		mySnake.direction =	 DIRECTIONS["east"];
+	if(e.which == 68 && mySnake.direction !==  "west"){
+		mySnake.direction =	 "east";
 //		socket.emit('movePlayer', {dir: 'east'});
 	}
 
-	if(e.which == 83 && mySnake.direction !==  DIRECTIONS["north"]){
-		mySnake.direction =	 DIRECTIONS["south"];
+	if(e.which == 83 && mySnake.direction !==  "north"){
+		mySnake.direction =	 "south";
 //		socket.emit('movePlayer', {dir: 'south'});			
 	}
 
-	if(e.which == 65 && mySnake.direction !==  DIRECTIONS["east"]){
-		mySnake.direction =	 DIRECTIONS["west"];
+	if(e.which == 65 && mySnake.direction !==  "east"){
+		mySnake.direction =	 "west";
 //		socket.emit('movePlayer', {dir: 'west'});			
 	}
 	
