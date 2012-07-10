@@ -73,18 +73,20 @@ CellModel.prototype = {
 
 asEvented.call(CellModel.prototype);
 
-var SnakeModel = function(color, startingCell, cube, otherPlayer) {
+
+var SnakeModel = function(color, startingCell, direction, cube, otherPlayer) {
 	
-	var self = this;
 	this.color = color;
+	this.cube = cube;
+	this.direction = direction;
+	this.otherPlayer = otherPlayer;
 	
 	// an array of cells.
 	this.body = [];
 	
 	this.body[0] = startingCell;
 	console.log(this.body);
-	
-	var intervalMe = setInterval(self.sendData, 10);
+
 }
 
 SnakeModel.prototype = {
@@ -102,31 +104,19 @@ SnakeModel.prototype = {
 		oldTail = null;
 	},
 	
-	sendData: function() {
-		if (otherPlayer) {
-			return;
-		}
-		socket.emit('movePlayer', {
-			location: self.body[0].getLocation();
-		});
-	},
-	
 	evaluateMove: function() {
-		if (otherPlayer) return;
 		
-		var newHead = cube.adjacentCell(this.body[0], this.direction);
+		var newHead = this.cube.adjacentCell(this.body[0], this.direction);
 			
 		if (cube.isEmpty(newHead)) {
 			_nextHeadCell = newHead;
 		} 
 		else {
-			GAME_ON = false;
-			socket.emit("PlayerDeath");
+			this.trigger('hasHitObstacle');
 		}
 	}
 
 	move: function() {
-		if (otherPlayer) return;
 		this.addBodySegment(_nextHeadCell);
 		
 		if (!this.hasJustEaten()) {
@@ -147,6 +137,48 @@ SnakeModel.prototype = {
 asEvented.call(SnakeModel.prototype);
 
 
+var SnakeView = function(snake) {
+	
+	snake.on('hasHitObstacle', function() {
+		GAME_ON = false;
+		socket.emit("PlayerDeath");
+	});
+	
+	if (!snake.otherPlayer) {
+		// Event handlers:
+		$('body').on('keydown', $.proxy(function(e) {
+			console.log(e.which);
+			if (!GAME_ON) return;
+			if (e.which === 87 && mySnake.direction !== "south"){
+				snake.direction =	 "north";
+			}
+			else if (e.which == 68 && mySnake.direction !==  "west"){
+				snake.direction =	 "east";
+			}
+			else if (e.which == 83 && mySnake.direction !==  "north"){
+				snake.direction =	 "south";
+			}
+			else if (e.which == 65 && mySnake.direction !==  "east"){
+				snake.direction =	 "west";
+			}
+			
+			socket.emit('movePlayer', {
+				direction: snake.direction
+			});
+			
+/*			// quit
+			else if (e.which === 27) {
+				clearInterval(interval);
+			} */
+		}));
+	}
+}
+
+SnakeView.prototype = {
+}
+
+
+
 var FaceModel = function(size, faceIdx) {
 	this.size = size;
 	
@@ -164,6 +196,10 @@ FaceModel.prototype = {
 
 asEvented.call(FaceModel.prototype);
 
+
+// TODO: add FaceView, which will be a wrapper and event handler and emitter for
+// a single canvas object.
+
 	
 var CubeModel = function(size){
 	
@@ -179,12 +215,12 @@ var CubeModel = function(size){
 CubeModel.prototype = {
 	
 	addSnake: function(snake) {
-		this.snakes.push(snake)
+		this.snakes.push(snake);
 	},
 	
 	isEmpty: function(cell) {
 		
-		// TODO: put in support for not just empty cells and snake cells, but cells with food.
+		// TODO (not urgent): put in support for not just empty cells and snake cells, but cells with food.
 		
 		var location = cell.getLocation(),
 			faceIdx = location.faceIdx,
@@ -292,16 +328,33 @@ CubeModel.prototype = {
 		return newFace.grid[new_x][new_y];
 	},
 	
+}
+
+var CubeView = function(cube) {
+	this.cube = cube;
+	
+	// TODO: Flesh this out. This will be the thing that renders all the canvas
+	// objects, and keeps them in proper orientation to each other, and to the viewer..
+
+
+	
+}
+
+CubeView.prototype = {
 	step: function() {
-		_.each(this.snakes, function(snake) {
+		_.each(this.cube.snakes, function(snake) {
 			snake.evaluateMove();
 		});
-		_.each(this.snakes, function(snake) {
-			snake.move();
-		});
+		if (GAME_ON) {
+			_.each(this.snakes, function(snake) {
+				snake.move();
+			});
+		}
 	}
 }
 
+// TODO: cannibalize all functionality from the rest of this document
+// (or at lest from the canvas constructor) and put it into various views above.
 
 var Canvas = function(elementId, field, size) {		
 	var self = this;
@@ -371,100 +424,71 @@ var mySnake,
 	cube = new CubeModel(GRID_SIZE, FIELDNUM),
 	canvas = new Canvas('mainCanvas', field, GRID_SIZE);
 	
-	socket.on('thisPlayerData', function(data){
-		var color = data.color,
-			location = data.location;	
-			console.log(location);
-		mySnake = new Snake(color, location, cube);		
-		cube.addSnake(mySnake);	
-		if(location.y < 20){
-			mySnake.direction = "south";
-		}
-		if(location.y > 20){
-			mySnake.direction = "north";
-		}
-	});
-
-	var otherPlayerCalled = false;
-	socket.on('otherPlayerJoin', function(data) {
-		if(otherPlayerCalled){ 
-			socket.emit('gameReady');
-			return; 
-		} else { 
-			otherPlayerCalled = true;			
-		}
-		addMsg("Another player has joined the game");
-
-		var color = data.color,
-			location = data.location;
-
-		otherSnake = new Snake(color, location, cube, true);		
-		field.addSnake(otherSnake);
-		canvas.drawCell(location, otherSnake.color);
-
-		socket.emit('sendPlayerData', {
-			location: location,
-			color: color
-		})
-	});
-
-	socket.on('gameStart', function(){
-		addMsg("The game is ready to start.	 Starting in 5 seconds....");
-		var timeTillStart = 5;
-
-		var startMsg = setInterval(function(){
-			if(timeTillStart === 0){  
-				addMsg('Start!');
-				GAME_ON = true;
-				canvas.init();
-				clearInterval(startMsg);
-			}
-			addMsg(timeTillStart+"...");
-			timeTillStart -= 1;
-
-		}, 1000);
-	});
-
-	// Set the event listeners for the other snake. 
-	socket.on('receivePlayerPos', function(data) {
-		console.log(data.faceIdx + " " + data.x + " " + data.y);
-		otherSnake.addPoint(data);
-		canvas.drawCell(data, otherSnake.color);
-	});
-
-
-
-
-
-// Event handlers:
-// (THIS FIRST ONE IS TEST ONLY):	
-$('body').on('keydown', function(e) {
-	console.log(e.which);
-	if(!GAME_ON){ return; };
-	if(e.which === 87 && mySnake.direction !== "south"){
-		mySnake.direction =	 "north";
-//		socket.emit('movePlayer', {dir: 'north'});
-	}
-	
-	if(e.which == 68 && mySnake.direction !==  "west"){
-		mySnake.direction =	 "east";
-//		socket.emit('movePlayer', {dir: 'east'});
-	}
-
-	if(e.which == 83 && mySnake.direction !==  "north"){
-		mySnake.direction =	 "south";
-//		socket.emit('movePlayer', {dir: 'south'});			
-	}
-
-	if(e.which == 65 && mySnake.direction !==  "east"){
-		mySnake.direction =	 "west";
-//		socket.emit('movePlayer', {dir: 'west'});			
-	}
-	
-
-	// quit
-	if (e.which === 27) {
-		clearInterval(interval);
-	}
+socket.on('thisPlayerData', function(data){
+	var color = data.color,
+		location = data.location,
+		cell = cube.faces[location.faceIdx].grid[location.x][location.y],
+		direction = (location.y < 20) ? "south" : "north";
+		
+		console.log(location);
+		
+	mySnake = new Snake(color, cell, direction, cube);		
+	cube.addSnake(mySnake);	
 	
 });
+
+var otherPlayerCalled = false;
+
+socket.on('otherPlayerJoin', function(data) {
+	if(otherPlayerCalled){ 
+		socket.emit('gameReady');
+		return; 
+	} else { 
+		otherPlayerCalled = true;			
+	}
+	addMsg("Another player has joined the game");
+
+	var color = data.color,
+		location = data.location;
+
+	otherSnake = new Snake(color, location, cube, true);		
+	field.addSnake(otherSnake);
+	canvas.drawCell(location, otherSnake.color);
+
+	socket.emit('sendPlayerData', {
+		location: location,
+		color: color
+	})
+});
+
+socket.on('gameStart', function(){
+	addMsg("The game is ready to start.	 Starting in 5 seconds....");
+	var timeTillStart = 5;
+
+	var startMsg = setInterval(function(){
+		if(timeTillStart === 0){  
+			addMsg('Start!');
+			GAME_ON = true;
+			canvas.init();
+			clearInterval(startMsg);
+		}
+		addMsg(timeTillStart+"...");
+		timeTillStart -= 1;
+
+	}, 1000);
+});
+
+
+// TODO: we are now receiving a 'receivePlayerDirection' object instead. Rewrite.
+
+// Set the event listeners for the other snake. 
+socket.on('receivePlayerPos', function(data) {
+	console.log(data.faceIdx + " " + data.x + " " + data.y);
+	otherSnake.addPoint(data);
+	canvas.drawCell(data, otherSnake.color);
+});
+
+
+
+
+

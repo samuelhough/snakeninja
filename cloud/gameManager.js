@@ -183,7 +183,7 @@ module.exports = (function(){
 		});
 		
 		socket.on('movePlayer', function(data){
-			socket.in(roomId).broadcast.emit('receivePlayerPos', data);
+			socket.in(roomId).broadcast.emit('receivePlayerDirection', data);
 		});	
 
 		socket.on('gameReady', function(){
