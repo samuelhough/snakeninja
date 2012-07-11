@@ -85,7 +85,7 @@ module.exports.init = function(app, gameManager){
 	});
 
 	app.get('/playerCount', function(req, res){
-		
+		//res.send('<!DOCTYPE html><html lang="en" class="no-js"><head>');
 		res.send({playerCount: gameManager.currentPlayerCount() });
 	});
 
