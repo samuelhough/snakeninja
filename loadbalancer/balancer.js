@@ -78,31 +78,41 @@ var cloudManager = (function(){
 						workingclouds[key].playerCount = respObj.playerCount;
 					} catch(e){
 						console.log(e);
+						removecloud(cloud.uid);
 					}
 					
 				});
 			}(key, workingclouds[key]));
 		}
-	}, 10000);
+	}, 5000);
 
 	var pickcloud = function(){
-		var leastConnect = { playerCount: 1 };
+		var leastConnect;
+		var serversNeedingPlayers = [];
+		
 		for(var key in workingclouds){
 			if(workingclouds.hasOwnProperty(key)){
-				if(typeof workingclouds[key].playerCount !== 'undefined' && workingclouds[key].playerCount <= leastConnect.playerCount){
-					if(workingclouds[key].playerCount % 2 !== 0 || workingclouds[key].playerCount == 0){
-						leastConnect = workingclouds[key];
-					}
+				if(!leastConnect){ leastConnect = workingclouds[key]; }
+				if(typeof workingclouds[key].playerCount !== 'undefined'){ workingclouds[key].playerCount = 0 }
+				workingclouds[key].playerCount = Number(workingclouds[key].playerCount);
+				if(workingclouds[key].playerCount % 2 !== 0 || workingclouds[key].playerCount === 0){
+					serversNeedingPlayers.push(workingclouds[key]);
 				}
 			}
 		}
-		if(!leastConnect.url){
-			for(var key in workingclouds){
-				leastConnect = workingclouds[key];
-			}
+		console.log(workingclouds);
+		console.log(serversNeedingPlayers);
+		if(!leastConnect && serversNeedingPlayers.length > 0){ leastConnect = serversNeedingPlayers[0]; }
+		for(var cur = 0; cur < serversNeedingPlayers.length; cur ++){
+			if(serversNeedingPlayers[cur].playerCount < leastConnect.playerCount){
+				leastConnect = serversNeedingPlayers[cur];
+			}		
+		}	
+		
+		if(!leastConnect){ 
+			
 		}
 		return leastConnect;
-
 	};
 	return {
 		on: on,
@@ -139,11 +149,12 @@ cloudManager.on('newcloud', function(data){
 					cloudManager.trigger('validated_server', data);
 				}
 			} catch(e){
-				console.log(e);
+				cloudManager.removecloud(data.uid) 
 			}
 			
 		});
 	} catch(e){
+		cloudManager.removecloud(data.uid) 
 		console.log(e);
 	} 
 });
@@ -169,7 +180,10 @@ app.get('/js/libs/:js', function(req, res){
 	res.sendfile(_public + "/js/libs/"+fileName)
 })
 
+app.get('/remove/:cloudurl/:key/:confirmkey', function(req, res){
 
+	res.send('not implimented');
+});
 
 app.get('/', function(req, res){
 	var cloud = cloudManager.pickcloud();

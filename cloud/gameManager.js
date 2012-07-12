@@ -24,16 +24,19 @@ module.exports = (function(){
 
 	var games = (function(){
 		var openGames = [];
-
-
+		var gamesPlayed = 0;
+		var returnGamesPlayed = function(){
+			return gamesPlayed;
+		}
 		var gameClass = function(){
+			gamesPlayed++;
 			var _players = [],
 				players = 0,
 				roomId = Math.round(Math.random() * 10000000000);
 			var getId = function(){
 
 			}
-			var colors = ["red", "green"];
+			var colors = ["blue", "green"];
 			var pos = [
 				{faceIdx: 0, x: 5, y:5}, 
 				{faceIdx: 0, x: 35, y: 35}
@@ -149,6 +152,7 @@ module.exports = (function(){
 			findGame: findGame,
 			returnGames: returnGames,
 			removeGame: removeGame,			
+			returnGamesPlayed: returnGamesPlayed,
 			currentPlayerCount: currentPlayerCount
 		}
 	}())
@@ -167,6 +171,7 @@ module.exports = (function(){
 		socket.emit("clientMsg", "You have joined room: " +roomId);
 		if(game.players < 2){
 			socket.emit("clientMsg", "Waiting for another player to join....")
+			socket.emit("clientMsg", "Use WASD to move!")
 		}
 		socket.in(roomId).broadcast.emit('otherPlayerJoin', {
 			location: thisPlayer.pos,
@@ -189,9 +194,14 @@ module.exports = (function(){
 		socket.on('gameReady', function(){
 			socket.emit('gameStart');
 			socket.in(roomId).broadcast.emit('gameStart');
+			socket.emit("clientMsg", "Use WASD to move!")
+			socket.in(roomId).broadcast.emit("clientMsg", "Use WASD to move!");
 		});
 		
+		
 		socket.on("PlayerDeath", function(){
+			if(game.gameOver){ return; }
+			game.gameOver = true;
 			socket.in(roomId).broadcast.emit('gameOver', true);
 			socket.emit('gameOver', false);
 		});
@@ -238,6 +248,7 @@ module.exports = (function(){
 		on: on,
 		trigger: trigger,
 		returnGames: games.returnGames,
-		currentPlayerCount: games.currentPlayerCount
+		currentPlayerCount: games.currentPlayerCount,
+		returnGamesPlayed: games.returnGamesPlayed
 	};
 }());

@@ -20,3 +20,21 @@ body  {
 	overflow-y: scroll;
 	overflow-x: hidden;
 }
+
+.modal {
+	width: 130px;
+     margin-top: 10px;  
+	position: absolute;
+	top: 50px;
+    left: 350px;
+     font-size: 50px;
+	text-align:center;
+     z-index: 1000;	
+}
+.win {
+	color: green;
+}
+
+.fail {
+	color: red;
+}

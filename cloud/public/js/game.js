@@ -424,11 +424,24 @@ var mySnake,
 	cube = new CubeModel(GRID_SIZE, FIELDNUM),
 	canvas = new Canvas('mainCanvas', field, GRID_SIZE);
 	
+<<<<<<< HEAD
 socket.on('thisPlayerData', function(data){
 	var color = data.color,
 		location = data.location,
 		cell = cube.faces[location.faceIdx].grid[location.x][location.y],
 		direction = (location.y < 20) ? "south" : "north";
+=======
+	// Event handlers:
+	// (THIS FIRST ONE IS TEST ONLY):	
+	$('body').on('keydown', function(e) {
+		cookie.reset();
+		console.log(e.which);
+		if(!GAME_ON){ return; };
+		if(e.which === 87 && mySnake.direction !== DIRECTIONS["south"]){
+			mySnake.direction =  DIRECTIONS["north"];
+	//		socket.emit('movePlayer', {dir: 'north'});
+		}
+>>>>>>> ad7265dfe6de01dbd92f44789eed5240d070df44
 		
 		console.log(location);
 		
