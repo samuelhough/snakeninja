@@ -27,7 +27,7 @@ var Game = (function() {
 		// It is an arbitrary map and the CSS for the actual rendering will have to correspond to it.
 		// (The top-level indices are face numbers.)
 
-		DIRECTIONS_TRANSFORM_MAP = {
+		DIRECTIONS_TRANSFORM_MAP: {
 			"0": { 
 				east:  {face: 1, direction: "west"}, 
 				north: {face: 2, direction: "south"}, 
@@ -65,7 +65,7 @@ var Game = (function() {
 				south: {face: 2, direction: "north"} 
 			}
 		}	
-	}
+	};
 
 
 	var makeEventedConstructor = function(proto) {
@@ -87,18 +87,14 @@ var Game = (function() {
 
 		init: function(location){
 
-			// _state contains a reference to a snake object,
-			// or null. (In the future maybe it might also contain
-			// a reference to a food object, or maybe just the string 'food').
+			// _state contains an object with two properties:
+			// type ('snake' or 'food'), and color.
+			// When the whole object is null, it's empty.
 
 			this._state = null;
 
 			// READ-ONLY location object
-			this._location = {
-				faceIdx: faceIdx,
-				x: x,
-				y: y
-			}		
+			this._location = location;
 		},
 
 		getLocation: function() {
@@ -110,7 +106,7 @@ var Game = (function() {
 		},
 
 		setState: function(state) {
-			if (state !== this._state) {
+			if (!(_.isEqual(state, this._state))) {
 				this._state = state;
 				this.trigger('change', this)
 			}
@@ -128,17 +124,24 @@ var Game = (function() {
 		init: function(color, startingCell, direction) {
 
 			this.direction = direction;
-
-			// READ-ONLY
-			this._color = color;
-			this._isOtherPlayer = isOtherPlayer;
+			this.color = color;
 
 			// an array of cells.
 			this.body = [];
 
 			this.body[0] = startingCell;
-			startingCell.setState(this);
-			console.log(this.body);
+			startingCell.setState({
+				type: 'snake', color: color
+			});
+			
+			console.log("this.body, from SnakeModel.prototype.init: ");
+			console.dir(this.body);
+
+			console.log("this.color, from SnakeModel.prototype.init: ");
+			console.log(this.color);
+
+			console.log("this.direction from SnakeModel.prototype.init: ");
+			console.log(this.direction);
 
 			// Event handler
 
@@ -147,13 +150,11 @@ var Game = (function() {
 			}, this));
 		},
 
-		getColor: function() {
-			return this._color;
-		},
-
 		addNewHead: function(newHead) {
 			this.body.unshift(newHead);
-			newHead.setState(this);
+			newHead.setState({
+				type: 'snake', color: color
+			});
 		},
 
 		removeOldTail: function() {
@@ -168,11 +169,14 @@ var Game = (function() {
 			else {
 				this.trigger('hasHitObstacle');
 			}
-		}
+		},
 
 		move: function() {
 			var currentHeadFaceIdx = this.body[0].location.faceIdx,
 				nextHeadFaceIdx = this._nextHead.location.faceIdx;
+				
+			console.log("Moving a snake from " + this.body[0].location.x + ", " + 
+								this.body[0].location.x + " to " + this._nextHead.location.x + ", " + this._nextHead.location.y);
 
 			if (currentHeadFaceIdx !== nextHeadFaceIdx) {
 				this.trigger('leavingFace', {
@@ -201,7 +205,7 @@ var Game = (function() {
 	});
 
 
-	var FaceModel = makeEventedPrototype({
+	var FaceModel = makeEventedConstructor({
 
 		init: function(size, faceIdx) {
 
@@ -215,7 +219,11 @@ var Game = (function() {
 
 			this.grid = _.map(fillerArray, function (x) {
 				return _.map(fillerArray, function (y) {
-					var newCell = new CellModel(faceIdx, x, y);
+					var newCell = new CellModel({
+						faceIdx: faceIdx, 
+						x: x, 
+						y: y
+					});
 					newCell.on('change', handleChange);
 					return newCell;
 				});
@@ -227,7 +235,7 @@ var Game = (function() {
 	var FaceView = makeEventedConstructor({
 
 		init: function(face, position, domId) {
-			this.size = face.size;
+			var size = face.size;
 
 			// Position is a number from 0 to 5. It starts out corresponding
 			// exactly to the faceView's model's index in the faces array of the CubeModel, 
@@ -259,7 +267,7 @@ var Game = (function() {
 			// Set event handler.
 			this.on('cellChange', $.proxy(function(cell) {
 				var location = cell.getLocation();
-				var color = cell.getState().color;
+				var color = cell.color;
 				if (color) {
 					this.drawCell(location.x, location.y, color);
 				} else {
@@ -287,7 +295,7 @@ var Game = (function() {
 
 		eraseCell: function(cell) {
 			this._draw(cell.location, config.BACKGROUND_COLOR);
-		}
+		},
 
 		rotate: function(axis) {
 
@@ -313,8 +321,30 @@ var Game = (function() {
 			this.snakes = [];
 
 			this.faces = _.map(_.range(0, 6), function(index) {
-				return new Face(size, index);
+				return new FaceModel(size, index);
 			});
+		},
+		
+		addSnake: function(snake) {
+			snake.on('leavingFace', $.proxy(function(transitObj) {
+
+				// TODO: Flesh this out. This needs to use the 'from' and 'to' face indices
+				// to determine the axis of rotation (using yet another arbitrary map, probably)
+				// and then it needs to call the 'rotate' method on all six of the faces, using
+				// the axis identifier.
+
+				// OH NO WAIT! THIS IS ACTUALLY A BIT TRICKIER THAN THAT. THE 'FROM' AND 'TO' INDICES,
+				// AS CURRENTLY WRITTEN, ONLY REFER TO THE MODEL RELATIONSHIPS, NOT TO THE ACTUAL CURRENT
+				// POSITION OF THE FACES AS SEEN BY THE USER. MUST DO SOMETHING ABOUT THAT. PERHAPS STORE DYNAMIC TRANSFORM 
+				// MAPS SO THAT MODEL INDICES CAN ALWAYS BE USED TO FIND CURRENT UI POSITION.
+
+			}, this));
+
+			snake.on('hasHitObstacle', $.proxy(function() {
+				this.trigger('endGame');
+			}, this));
+
+			this.snakes.push(snake);
 		},
 
 		findAdjacentCell: function(cell, direction) {
@@ -428,38 +458,19 @@ var Game = (function() {
 			this.faceViews = _.map(this.cube.faces, function(face, faceIdx) {
 				return new FaceView(face, faceIdx, 'face-' + faceIdx);
 			});
-		},
-
-		addSnake: function(snake) {
-			snake.on('leavingFace', $.proxy(function(transitObj) {
-
-				// TODO: Flesh this out. This needs to use the 'from' and 'to' face indices
-				// to determine the axis of rotation (using yet another arbitrary map, probably)
-				// and then it needs to call the 'rotate' method on all six of the faces, using
-				// the axis identifier.
-
-				// OH NO WAIT! THIS IS ACTUALLY A BIT TRICKIER THAN THAT. THE 'FROM' AND 'TO' INDICES,
-				// AS CURRENTLY WRITTEN, ONLY REFER TO THE MODEL RELATIONSHIPS, NOT TO THE ACTUAL CURRENT
-				// POSITION OF THE FACES AS SEEN BY THE USER. MUST DO SOMETHING ABOUT THAT. PERHAPS STORE DYNAMIC TRANSFORM 
-				// MAPS SO THAT MODEL INDICES CAN ALWAYS BE USED TO FIND CURRENT UI POSITION.
-
-			}, this));
-
-			snake.on('hasHitObstacle', $.proxy(function() {
+			
+			cube.on('endGame', function() {
 				clearInterval(this.gameInterval);
-				this.trigger('endGame');
-			}, this));
-
-			this.snakes.push(snake);
+			})
 		},
 
 		stepSnakes: function() {
-			var findAdjacentCell = this.cube.findAdjacentCell;
+			var findAdjacentCell = $.proxy(this.cube.findAdjacentCell, this.cube);
 
-			_.each(this.snakes, function(snake) {
+			_.each(this.cube.snakes, function(snake) {
 				var direction = snake.direction;
 				var cell = snake.body[0];
-				var adjacentCell = findAdjacentCellFunc(cell, direction);
+				var adjacentCell = findAdjacentCell(cell, direction);
 				snake.evaluateMoveTo(adjacentCell);
 			});
 
@@ -471,9 +482,8 @@ var Game = (function() {
 		},
 
 		makeItSo: function() {
-			this.gameInterval = setInterval(function() {
-				this.stepSnakes();
-			}, config.INTERVAL_TIME);
+			var stepSnakes = $.proxy(this.stepSnakes, this);
+			this.gameInterval = setInterval(stepSnakes, config.INTERVAL_TIME);
 		}
 	});
 
@@ -495,9 +505,11 @@ var Game = (function() {
 					startingCell = cube.faces[location.faceIdx].grid[location.x][location.y],
 					direction = (location.y < 20) ? "south" : "north";
 
-				console.log(location);
-
-				thisSnake = new Snake(color, startingCell, direction);
+				console.log("location, from socket.on('thisPlayerData'): ");
+				console.dir(location);
+				
+				console.log("about to instantiate thisSnake:");
+				thisSnake = new SnakeModel(color, startingCell, direction);
 				cube.addSnake(thisSnake);	
 
 			});
@@ -520,7 +532,8 @@ var Game = (function() {
 					startingCell = cube.faces[location.faceIdx].grid[location.x][location.y],
 					direction = (location.y < 20) ? "south" : "north";
 
-				otherSnake = new Snake(color, startingCell, direction);
+				console.log("about to instantiate otherSnake:");
+				otherSnake = new SnakeModel(color, startingCell, direction);
 				cube.addSnake(otherSnake);	
 
 				socket.emit('sendPlayerData', {
@@ -545,7 +558,7 @@ var Game = (function() {
 				}, 1000);
 			});
 
-			cubeView.on('endGame', function() {
+			cube.on('endGame', function() {
 				socket.emit('playerDeath');
 			});
 
@@ -554,6 +567,7 @@ var Game = (function() {
 			// Other player:
 			socket.on('receivePlayerDirection', function(data) {
 				otherSnake.trigger('receiveSnakeDirection', data);
+				console.log("data from socket.on('receivePlayerDirection'): ");
 				console.log(data.faceIdx + " " + data.x + " " + data.y);			
 			});
 
@@ -599,9 +613,7 @@ var Game = (function() {
 		}
 	});
 	
-	return {
-		Game: Game
-	};
+	return Game;
 
 })();
 
