@@ -50,7 +50,6 @@ module.exports = (function(){
 					pid: Math.random(),
 					index: _players.length, 
 					color: thisColor,
-					faceIdx: 0,
 					otherPlayerColor: otherPlayerColor, 
 					pos: position
 				};
@@ -183,7 +182,7 @@ module.exports = (function(){
 			color: thisPlayer.otherPlayerColor
 		});
 				
-		socket.on('sendPlayerData', function(data){
+		socket.on('sendPlayerData', function(data) {
 			socket.in(roomId).broadcast.emit('otherPlayerJoin', data);
 		});
 		
@@ -199,7 +198,7 @@ module.exports = (function(){
 		});
 		
 		
-		socket.on("PlayerDeath", function(){
+		socket.on('playerDeath', function(){
 			if(game.gameOver){ return; }
 			game.gameOver = true;
 			socket.in(roomId).broadcast.emit('gameOver', true);
