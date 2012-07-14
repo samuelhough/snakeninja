@@ -240,9 +240,6 @@ module.exports = (function(){
 
 	});
 
-
-	});
-
 	return {
 		on: on,
 		trigger: trigger,

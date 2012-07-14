@@ -4,7 +4,7 @@ body  {
 #container {
 	
 	width: 50%;
-    margin: 0px auto;
+	margin: 0px auto;
 	margin-top: 50px;
 }
 .canvas {
@@ -23,13 +23,13 @@ body  {
 
 .modal {
 	width: 130px;
-     margin-top: 10px;  
+	margin-top: 10px;  
 	position: absolute;
 	top: 50px;
-    left: 350px;
-     font-size: 50px;
+	left: 350px;
+	font-size: 50px;
 	text-align:center;
-     z-index: 1000;	
+	z-index: 1000;	
 }
 .win {
 	color: green;

@@ -1,5 +1,12 @@
-canvas {
+.canvas {
 	width: 500px;
 	height: 500px;
 	border: 1px solid black;
+	
+	/* Just for testing the first face: */
+	display: none;
+}
+
+#face-0 {
+	display: block;
 }

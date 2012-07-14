@@ -1,6 +1,6 @@
 var app = (function() {
+	
 	var notouch = 0;
-
 
 	var cookie = (function(){
 		function getCookie(c_name)
