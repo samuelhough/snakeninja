@@ -1,0 +1,150 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  
+  <style>
+    #container {
+      margin: auto;
+      position: relative;
+      top: 150px;
+      height: 500px;
+      width: 500px;
+      -webkit-perspective: 1000px;
+   }
+    
+    #cube {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      -webkit-transform-style: preserve-3d;
+      background: transparent;
+    }
+    
+    .face {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background-color: rgba(51, 200, 51, .5);
+      opacity: .75;
+      border: 3px red solid;
+      -webkit-backface-visibility: hidden;
+    }
+    
+    .face .faceIdx {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      font-size:2.5em;
+      font-weight: bold;
+    }
+    
+    .face .dir {
+      position: absolute;
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+    
+    .face .east {
+      left: 90%;
+      top: 50%;
+    }
+    
+    .face .north {
+      left: 50%;
+      top: 10%;
+    }
+    
+    .face .west {
+      left: 10%;
+      top: 50%;
+    }
+    
+    .face .south {
+      right: 50%;
+      top: 90%;
+    }
+    
+    #face-0 {
+      -webkit-transform: translateZ(-250px);
+    }
+    
+    #face-1 {
+      -webkit-transform: translateX(250px) rotateY(-90deg);
+     }
+    
+    #face-2 {
+      -webkit-transform: translateY(-250px) rotateX(270deg);
+    }
+    
+    #face-3 {
+      -webkit-transform: translateX(-250px) rotateY(90deg);
+    }
+    
+    #face-4 {
+      -webkit-transform: translateY(250px) rotateX(90deg);
+    }
+    
+    #face-5 {
+      -webkit-transform: translateZ(250px) rotateX(180deg);
+    }
+    
+    
+  </style>
+  
+</head>
+<body>
+  <div id="container">
+    <div id="cube">
+      <div id="face-0" class="face">
+        <span class="faceIdx">0</span>
+        <span class="dir east">E</span>
+        <span class="dir north">N</span>
+        <span class="dir west">W</span>
+        <span class="dir south">S</span>
+      </div>
+      <div id="face-1" class="face">
+        <span class="faceIdx">1</span>
+        <span class="dir east">E</span>
+        <span class="dir north">N</span>
+        <span class="dir west">W</span>
+        <span class="dir south">S</span>
+        
+      </div>
+      <div id="face-2" class="face">
+        <span class="faceIdx">2</span>
+        <span class="dir east">E</span>
+        <span class="dir north">N</span>
+        <span class="dir west">W</span>
+        <span class="dir south">S</span>
+        
+      </div>
+      <div id="face-3" class="face">
+        <span class="faceIdx">3</span>
+        <span class="dir east">E</span>
+        <span class="dir north">N</span>
+        <span class="dir west">W</span>
+        <span class="dir south">S</span>
+        
+      </div>
+      <div id="face-4" class="face">
+        <span class="faceIdx">4</span>
+        <span class="dir east">E</span>
+        <span class="dir north">N</span>
+        <span class="dir west">W</span>
+        <span class="dir south">S</span>
+        
+      </div>
+      <div id="face-5" class="face">
+        <span class="faceIdx">5</span>
+        <span class="dir east">E</span>
+        <span class="dir north">N</span>
+        <span class="dir west">W</span>
+        <span class="dir south">S</span>
+        
+      </div>
+    </div>
+  </div>
+</body>
+</html>
