@@ -5,15 +5,19 @@ body  {
 	
 	width: 50%;
 	margin: 0px auto;
-	margin-top: 50px;
 }
-.canvas {
+#gameView {
 	margin-left: auto;
 	margin-right: auto;
 }
+
+#instructions {
+	padding-top: 15px;
+}
+
 #chat {
-	width: 500px;
-	height: 50px;
+	width: 700px;
+	height: 80px;
 	margin-top: 10px;
 	border: 1px solid black;
 	background-color: white;

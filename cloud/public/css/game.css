@@ -1,12 +1,57 @@
-.canvas {
+#gameView {
+	margin: auto;
+	position: relative;
+	top: 20px;
+	height: 700px;
+	width: 700px;
+	-webkit-perspective: 750px;
+	overflow: hidden;
+	border: 1px solid black;
+}
+
+#cube {
+	position: absolute;
 	width: 500px;
 	height: 500px;
-	border: 1px solid black;
-	
-	/* Just for testing the first face: */
-	display: none;
+	left: 100px;
+	top: 100px;
+	-webkit-transform-style: preserve-3d;
+	-webkit-transition: -webkit-transform 1.5s ease;
+	background: transparent;
+}
+
+.face {
+	position: absolute;
+	width: 500px;
+	height: 500px;
+	background-color: rgba(255,255,255,0.2);
+	opacity: .75;
+	border: 2px solid green;
 }
 
 #face-0 {
-	display: block;
+	-webkit-transform: translateZ(-250px);
 }
+
+#face-1 {
+	-webkit-transform: translateX(250px) rotateY(-90deg);
+ }
+
+#face-2 {
+	-webkit-transform: translateY(-250px) rotateX(270deg);
+}
+
+#face-3 {
+	-webkit-transform: translateX(-250px) rotateY(90deg);
+}
+
+#face-4 {
+	-webkit-transform: translateY(250px) rotateX(90deg);
+}
+
+#face-5 {
+	-webkit-transform: translateZ(250px) rotateX(180deg);
+}
+
+	
+
