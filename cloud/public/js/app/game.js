@@ -53,14 +53,15 @@ This is just according to my arbritrary drawing from before. Once we replaced th
 define([
     'jquery',
     'lodash',
-    'asevented',
+    'app/asevented_ext',
     'app/setup',
 ], function (
     $,
     _,
-    asEvented,
+    asEventedExt,
     setup
 ) {
+    var makeEventedConstructor = asEventedExt.makeEventedConstructor;
     var socket = setup.socket;
     var addMsg = setup.addMsg;
     
@@ -115,21 +116,6 @@ define([
 				south: {face: 2, direction: "north"} 
 			}
 		}	
-	};
-
-
-	var makeEventedConstructor = function(proto) {
-		var expose = function(){
-			this.init.apply(this, arguments);
-		};
-
-		// Gets overridden if the caller provides its own version (which it should).
-		expose.prototype.init = function(){};
-
-		$.extend(expose.prototype, proto);
-		asEvented.call(expose.prototype);
-
-		return expose;
 	};
 
 
