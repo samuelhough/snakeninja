@@ -10,10 +10,58 @@
 
 // (UNTIL WE WANT TO ADD SUPPORT FOR SNAKES EATING FOOD.)
 
-;
+// UPDATE: Here is the text of an email I sent just after writing that recap above.
+// I'll go through and make it into more coherent TODOs later.
 
-var Game = (function() {
-	
+/*
+
+Thinking out loud again, for my own benefit as well as yours if you're looking at or working on the code:
+
+I probably won't be able to get to this for a few days, but here are some thoughts and realizations I've had since I pushed the main bulk of what I had done on Saturday night:
+
+1. The rotation of the cube will be both easier and harder than I had thought. 
+
+Easier because of the -webkit-transform-style property, which will allow us to set up one parent element to rotate and not have to worry about rotating and translating all the individual faces, once we've got their initial positions set up (an excellent demo of this can be found at http://www.webkit.org/blog-files/3d-transforms/transform-style.html. Just mouse over the image to see what this property does). In the cubetest.html file I sent last night, the parent element I used was an invisible square div sandwiched into the middle of the cube along the x and y axes, of the same width and height as all the faces.
+
+Harder because it turns out transforms are not cumulative. Even if you do different kinds of transforms, like a rotateX transform and then a translateZ transform, the second one will wipe out the first one, because they are all converted behind the scenes into matrix transforms, which are not cumulative. So we have to keep track of how the cube has been rotated, and how to determine the next absolute rotation from the current absolute rotation plus the next relative rotation. We can actually figure out the current rotation of the cube parent element from the current matrix transform values (there are websites which explain how to do this using trigonometry), but it's easier just to keep track ourselves, I think.
+
+2. I forgot to account for the fact that people's keypresses will have to be converted into different directions for the snake model, because the x and y axes on the currently viewed face model might not be the same as the ones the viewer is seeing.
+
+3. I'm pretty sure I forgot to account for the fact that the 'leavingFace' event emitted by the snake should have no effect if the snake is the other player, because that's all about adjusting the view for the viewer. The easiest way to fix this would be to reinstitute the 'otherPlayer' property of the snake, which I had taken out. 
+
+4. (optional, but could theoretically make life a lot easier): It would perhaps make it easier to create more DRY and logical rotation and transformation maps and methods if we changed the directions 
+
+'east', 'north', 'west', 'south' 
+
+into
+
+ 'x+', 'y-', 'x-', 'y+', 
+
+and even more so if we changed the face indices 
+
+0, 1, 2, 3, 4, 5 
+
+into 
+
+'z-', 'x+', 'y-', 'x-', 'y+', 'z+'
+
+This is just according to my arbritrary drawing from before. Once we replaced these in my transformation map we could easily change the order in the code so it made more sense to look at when reading, into x-, x+, y-, y+, z-, z+. (The relative positions of the x and y axes on all the faces would still have to be arbitrary, though.)
+
+*/
+
+
+define([
+    'libs/jquery',
+    'libs/lodash',
+    'setup',
+], function (
+    $,
+    _,
+    setup
+) {
+    var socket = setup.socket;
+    var addMsg = setup.addMsg;
+    
 	var config = {
 		LINE_CAP: 'butt',
 		LINE_JOIN: 'miter',
@@ -133,7 +181,7 @@ var Game = (function() {
 			startingCell.setState({
 				type: 'snake', color: color
 			});
-			
+
 			console.log("this.body, from SnakeModel.prototype.init: ");
 			console.dir(this.body);
 
@@ -174,7 +222,7 @@ var Game = (function() {
 		move: function() {
 			var currentHeadFaceIdx = this.body[0].location.faceIdx,
 				nextHeadFaceIdx = this._nextHead.location.faceIdx;
-				
+
 			console.log("Moving a snake from " + this.body[0].location.x + ", " + 
 								this.body[0].location.x + " to " + this._nextHead.location.x + ", " + this._nextHead.location.y);
 
@@ -324,7 +372,7 @@ var Game = (function() {
 				return new FaceModel(size, index);
 			});
 		},
-		
+
 		addSnake: function(snake) {
 			snake.on('leavingFace', $.proxy(function(transitObj) {
 
@@ -458,7 +506,7 @@ var Game = (function() {
 			this.faceViews = _.map(this.cube.faces, function(face, faceIdx) {
 				return new FaceView(face, faceIdx, 'face-' + faceIdx);
 			});
-			
+
 			cube.on('endGame', function() {
 				clearInterval(this.gameInterval);
 			})
@@ -490,11 +538,9 @@ var Game = (function() {
 
 	var Game = makeEventedConstructor({
 
-		init: function(app) {
+		init: function() {
 
-			var socket = app.socket,
-				addMsg = app.addMsg,
-				thisSnake, 
+			var thisSnake, 
 				otherSnake, 
 				cube = new CubeModel(config.GRID_SIZE),
 				cubeView = new CubeView(cube);
@@ -507,7 +553,7 @@ var Game = (function() {
 
 				console.log("location, from socket.on('thisPlayerData'): ");
 				console.dir(location);
-				
+
 				console.log("about to instantiate thisSnake:");
 				thisSnake = new SnakeModel(color, startingCell, direction);
 				cube.addSnake(thisSnake);	
@@ -601,7 +647,7 @@ var Game = (function() {
 				if (newDirection && 
 							newDirection !== snake.direction && 
 							newDirection !== oppositeDirection(snake.direction)) {
-					
+
 					thisSnake.trigger('receiveSnakeDirection', {
 						direction: newDirection
 					});
@@ -612,14 +658,12 @@ var Game = (function() {
 			}, this));
 		}
 	});
-	
+
 	return Game;
-
-})();
-
-$(function() {
-	new Game(app);
+    
 });
+
+
 
 
 	

@@ -2,7 +2,7 @@ html
 	head
 		title="Snake Jitsu"
 		link(rel="stylesheet", type="text/css", href="css/layout.css")
-		link(rel="stylesheet", type="text/css",href="css/game.css")
+		link(rel="stylesheet", type="text/css", href="css/game.css")
 	body
 		div#container!= partial('index.jade')  
-		div(id="msg")
+		script(data-main="/js/app.js", src="/js/lib/require.js")
