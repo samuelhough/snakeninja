@@ -1,7 +1,8 @@
 var express = require('express'),
 	app = express.createServer(),
 	config = require('./config.js'),
-	port = config.get('port'),
+	port = 3000,
+	//port = config.get('port'),
 	_public = '/public',
 	gameManager = require('./gameManager.js'),
 	fs = require('fs');
