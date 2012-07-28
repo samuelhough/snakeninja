@@ -53,10 +53,12 @@ This is just according to my arbritrary drawing from before. Once we replaced th
 define([
     'jquery',
     'lodash',
+    'asevented',
     'app/setup',
 ], function (
     $,
     _,
+    asEvented,
     setup
 ) {
     var socket = setup.socket;
