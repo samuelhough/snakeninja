@@ -160,13 +160,6 @@ module.exports = (function(){
 
 	on('newConnection', function(socket){	
 	    
-	    socket.on('really', function() {
-            console.log('really')
-        });
-        console.log('huh');
-  		
-        
-	    	
 		var game = games.findGame(),
 			roomId = game.roomId,
 			userId = game.getId(),

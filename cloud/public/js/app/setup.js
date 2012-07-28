@@ -5,8 +5,6 @@ define([
     $
     //io,
 ) {
-    console.log($);
-    console.log(jQuery);
     var notouch = 0;
 
 	var cookie = (function(){
@@ -61,8 +59,6 @@ define([
 		cookie.set('notouch', 0);
 	}
 	
-	console.log($);
-	
 	$(document).on('click', function(){
 		cookie.reset();
 	});
@@ -70,10 +66,6 @@ define([
 	var url = document.location.host;
 
 	var socket = io.connect('http://'+url);
-	
-	
-	
-	socket.emit('really');
 	
 	function addMsg(msg){
 		$('#chat').html(msg + "<br>"+ $('#chat').html() );
