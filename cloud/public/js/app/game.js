@@ -51,9 +51,9 @@ This is just according to my arbritrary drawing from before. Once we replaced th
 
 
 define([
-    'libs/jquery',
-    'libs/lodash',
-    'setup',
+    'jquery',
+    'lodash',
+    'app/setup',
 ], function (
     $,
     _,

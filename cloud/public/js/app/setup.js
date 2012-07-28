@@ -1,11 +1,12 @@
 define([
-    'libs/jquery',
-    '../socket.io/socket.io',
+    'jquery'
+    //'/socket.io/socket.io',
 ], function(
-    $,
-    io,
+    $
+    //io,
 ) {
-
+    console.log($);
+    console.log(jQuery);
     var notouch = 0;
 
 	var cookie = (function(){
@@ -59,6 +60,9 @@ define([
 	} else {
 		cookie.set('notouch', 0);
 	}
+	
+	console.log($);
+	
 	$(document).on('click', function(){
 		cookie.reset();
 	});
@@ -66,6 +70,11 @@ define([
 	var url = document.location.host;
 
 	var socket = io.connect('http://'+url);
+	
+	
+	
+	socket.emit('really');
+	
 	function addMsg(msg){
 		$('#chat').html(msg + "<br>"+ $('#chat').html() );
 	}
@@ -91,10 +100,10 @@ define([
 		console.log(newId)
 	});
 
-	socket.on('chat', function(chat){
-		$('#msg').html($('#msg').html() + "<br> "+ chat)
-	});
-	socket.emit('chat','hi');
+//	socket.on('chat', function(chat){
+//		$('#msg').html($('#msg').html() + "<br> "+ chat)
+//	});
+//	socket.emit('chat','hi');
 
 	socket.on('refreshPage', function(){
 		addMsg('Game over!');

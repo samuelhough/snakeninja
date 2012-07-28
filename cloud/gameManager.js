@@ -158,7 +158,15 @@ module.exports = (function(){
 
 
 
-	on('newConnection', function(socket){		
+	on('newConnection', function(socket){	
+	    
+	    socket.on('really', function() {
+            console.log('really')
+        });
+        console.log('huh');
+  		
+        
+	    	
 		var game = games.findGame(),
 			roomId = game.roomId,
 			userId = game.getId(),
@@ -215,8 +223,7 @@ module.exports = (function(){
 			socket.emit('playerQuit');
 			socket.leave(roomId);
   		});
-
-  		
+        
 		/*
 			socket.on('gameOver', function(){
 				console.log('removing room '+roomId)
