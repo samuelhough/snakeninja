@@ -4,32 +4,7 @@ define(['utils/make_evented_constructor'], function(makeEventedConstructor) {
 
     	init: function(size, faces) {
     		this.size = size;
-    		this.snakes = [];
-
     		this.faces = faces;
-    	},
-
-    	addSnake: function(snake) {
-    	    var self = this;
-    		snake.on('leavingFace', function(transitObj) {
-
-    			// TODO: Flesh this out. This needs to use the 'from' and 'to' face indices
-    			// to determine the axis of rotation (using yet another arbitrary map, probably)
-    			// and then it needs to call the 'rotate' method on all six of the faces, using
-    			// the axis identifier.
-
-    			// OH NO WAIT! THIS IS ACTUALLY A BIT TRICKIER THAN THAT. THE 'FROM' AND 'TO' INDICES,
-    			// AS CURRENTLY WRITTEN, ONLY REFER TO THE MODEL RELATIONSHIPS, NOT TO THE ACTUAL CURRENT
-    			// POSITION OF THE FACES AS SEEN BY THE USER. MUST DO SOMETHING ABOUT THAT. PERHAPS STORE DYNAMIC TRANSFORM 
-    			// MAPS SO THAT MODEL INDICES CAN ALWAYS BE USED TO FIND CURRENT UI POSITION.
-
-    		});
-
-    		snake.on('hasHitObstacle', function() {
-    			self.trigger('endGame');
-    		});
-
-    		this.snakes.push(snake);
     	},
 
     	findAdjacentCell: function(cell, direction) {

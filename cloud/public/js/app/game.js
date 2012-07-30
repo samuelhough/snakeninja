@@ -55,14 +55,12 @@ define([
     'lodash',
     'app/config',
     'app/setup',
-    'app/snake',
     'app/cube_view'
 ], function (
     $,
     _,
     config,
     setup,
-    Snake,
     CubeView
 ) {
     return function() {
@@ -84,9 +82,7 @@ define([
     		console.dir(location);
 
     		console.log("about to instantiate thisSnake:");
-    		thisSnake = new Snake(color, startingCell, direction);
-    		cube.addSnake(thisSnake);	
-
+    		thisSnake = cubeView.addSnake(color, startingCell, direction);
     	});
 
     	var otherPlayerCalled = false;
@@ -108,8 +104,7 @@ define([
     			direction = (location.y < 20) ? "south" : "north";
 
     		console.log("about to instantiate otherSnake:");
-    		otherSnake = new Snake(color, startingCell, direction);
-    		cube.addSnake(otherSnake);	
+    		otherSnake = cubeView.addSnake(color, startingCell, direction);	
 
     		socket.emit('sendPlayerData', {
     			location: location,
